@@ -2,7 +2,8 @@ SOURCE_DIR=src
 BUILD_DIR=build
 
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -Wno-unused-parameter
+CXXFLAGS ?= 
+CXXFLAGS += -std=c++17 -Wall -Wextra -Werror -Wno-unused-parameter
 
 TARGET := sidump
 SRCS := $(wildcard $(SOURCE_DIR)/*.cpp)
