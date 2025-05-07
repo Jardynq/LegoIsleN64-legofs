@@ -228,7 +228,6 @@ bool Object::ExtractToFile(FileBase *f) const
     break;
   }
   default:
-    LogWarning() << "Didn't know how to extract type '" << RIFF::PrintU32AsString(filetype()) << "', merging..." << std::endl;
     /* fall-through */
   case MxOb::SMK:
   case MxOb::OBJ:
