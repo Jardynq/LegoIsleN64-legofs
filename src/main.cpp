@@ -4,28 +4,24 @@
 #include <filesystem>
 #include <stdio.h>
 #include <string>
+#include <thread>
 
 #include "core.h"
 #include "interleaf.h"
 #include "scripts.h"
 #include "worlds.h"
-#include "dump_assets.h"
 
 namespace fs = std::filesystem;
 using namespace si;
 
-void handle_scripts(Interleaf &weaver, const char *path, const std::string &dest) {
+void handle_scripts(std::string path, std::string dest) {
 	Index tree;
-	printf("Reading %s\n", path);
-	if (weaver.Read(path) != Interleaf::ERROR_SUCCESS) {
-		printf("Failed to read %s", path);
+	Interleaf weaver;
+	if (weaver.Read(path.c_str()) != Interleaf::ERROR_SUCCESS) {
+		printf("Failed to read %s", path.c_str());
 	}
 	handle_node((Core *)&weaver, nullptr, &tree, dest);
-	printf("\n");
-
-	// Ensure any skipped indeces are filled with empty nodes and files
 	fill_holes(tree, dest);
-
 	std::sort(
 		tree.nodes.begin(),
 		tree.nodes.end(),
@@ -33,71 +29,26 @@ void handle_scripts(Interleaf &weaver, const char *path, const std::string &dest
 	write_index(tree, dest);
 }
 
-void handle_worlds(const char *path, const std::string &dest) {
+void handle_worlds(const char *path, const std::string &dest, bool is_sync) {
 	auto db = WorldDB::Read(path);
-
 	fs::create_directory(dest);
-
 	db.worlds.push_back(db.shared);
+	auto threads = std::vector<std::thread>();
 	for (auto& world : db.worlds) {
-		printf("World: %s\n", world.m_worldName);
-
-		std::string world_path = dest + world.m_worldName + "/";
-		fs::create_directory(world_path);
-
-		std::string model_root = world_path + "models/";
-		fs::create_directory(model_root);
-		for (auto model : world.m_models) {
-			std::string model_path = model_root + model->ref->m_modelName + "/";
-			fs::create_directory(model_path);
-			
-			printf("  Model: %s\n", model->ref->m_modelName);
-			for (auto texture : model->m_textures) {
-				printf("    Texture: %s\n", texture->m_name);
-				std::string texture_path = model_path + texture->m_name;
-				dump_texture(*texture, texture_path.c_str());
-			}
-
-			for (auto comp : model->m_roi.m_components) {
-				printf("    Component: %s\n", comp->m_roiname);
-				int i_lod = 0;
-				for (auto lod: comp->m_lods) {
-					printf("      Lod %d: %s\n", i_lod, comp->m_roiname);
-					std::string lod_path = model_path + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
-					dump_lod(*lod, lod_path.c_str());
-					i_lod += 1;
-				}
-			}
+		if (is_sync) {
+			handle_world(world, dest);
+		} else {
+			threads.push_back(std::thread(handle_world, std::ref(world), dest));
 		}
-
-		std::string part_root = world_path + "parts/";
-		fs::create_directory(part_root);
-		for (auto part : world.m_parts) {
-			std::string part_path = part_root + part->ref->m_roiname + "/";
-			fs::create_directory(part_path);
-
-			printf("  Part: %s\n", part->ref->m_roiname);
-			for (auto texture : part->m_textures) {
-				printf("    Texture: %s\n", texture->m_name);
-				std::string texture_path = part_path + texture->m_name;
-				dump_texture(*texture, texture_path.c_str());
-			}
-			for (auto data : part->m_data) {
-				int i_lod = 0;
-				for (auto lod : data->m_lods) {
-					printf("    Lod: %s %d\n", data->m_roiname, i_lod);
-					std::string lod_path = part_path + data->m_roiname + "_" + std::to_string(i_lod) + ".obj";
-					dump_lod(*lod, lod_path.c_str());
-					i_lod += 1;
-				}
-			}
-		}
+	}
+	for (auto& thread : threads) {
+		thread.join();
 	}
 }
 
 int main(int argc, char *argv[]) {
-	if (argc != 4) {
-		printf("Usage: sidump [scripts|worlds] <destination> <interleaf file>\n");
+	if (argc != 4 && argc != 5) {
+		printf("Usage: sidump [scripts|worlds] <destination> <interleaf file> [sync]\n");
 		return 0;
 	}
 
@@ -124,28 +75,50 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	Interleaf weaver;
+	bool is_sync = false;
+	if (argc == 5) {
+		if (strcmp(argv[4], "sync") == 0) {
+			is_sync = true;
+		} else {
+			fprintf(stderr, "Invalid argument: %s\n", argv[4]);
+			return -1;
+		}
+	}
+
+
 	if (fs::is_directory(path)) {
 		if (is_worlds) {
 			fprintf(stderr, "In 'worlds' mode, the path must be a file\n");
 			return -1;
 		}
+		auto weavers = std::vector<Interleaf*>();
+		auto threads = std::vector<std::thread>();
 		for (const auto& file : fs::recursive_directory_iterator(path)) {
 			if (fs::is_regular_file(file)) {
 				fs::path rel_path = fs::relative(file.path(), path);
 				fs::path dest_path = destination / rel_path;
 				fs::create_directories(dest_path);
 
+				std::string file_str = file.path().string();
 				std::string dest_str = dest_path.string() + "/";
-				handle_scripts(weaver, file.path().c_str(), dest_str);
+				if (is_sync) {
+					handle_scripts(file_str, dest_str);
+				} else {
+					threads.push_back(
+						std::thread(handle_scripts, file_str, dest_str)
+					);
+				}
 			}
+		}
+		for (auto& thread : threads) {
+			thread.join();
 		}
 	}
 	else {
 		if (is_scripts) {
-			handle_scripts(weaver, path, destination);
+			handle_scripts(path, destination);
 		} else if (is_worlds) {
-			handle_worlds(path, destination);
+			handle_worlds(path, destination, is_sync);
 		}
 	}
 

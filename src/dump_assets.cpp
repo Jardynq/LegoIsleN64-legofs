@@ -1,7 +1,6 @@
 #include <climits>
 #include <cstdio>
 #include <cstring>
-#include <string>
 
 #include "dump_assets.h"
 #include "utils.h"

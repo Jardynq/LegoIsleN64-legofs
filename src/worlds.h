@@ -3,27 +3,22 @@
 #include "anim.h"
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
 
-struct ColorAlias {
-	const char* m_name = nullptr;
+struct ColorA {
 	int m_red = 255;
 	int m_green = 0;
 	int m_blue = 255;
 	int m_alpha = 255;
 };
 
-struct color {
+struct Color {
 	unsigned char m_red = 255;
 	unsigned char m_green = 0;
 	unsigned char m_blue = 255;
-};
-struct PaletteEntry {
-	unsigned char m_red = 255;  
-	unsigned char m_green = 0;
-	unsigned char m_blue = 255; 
 };
 
 struct TextureData {
@@ -32,7 +27,7 @@ struct TextureData {
 	unsigned int m_width = 0;
 	unsigned int m_height = 0;
 	unsigned int m_count = 0;
-	std::vector<PaletteEntry> m_palette;
+	std::vector<Color> m_palette;
 	unsigned char* m_bits = nullptr;
 };
 
@@ -56,7 +51,7 @@ struct MeshInfo {
 		unsigned char* m_unk0x18 = nullptr;
 	};
 	
-	color m_color;
+	Color m_color;
 	float m_alpha = 0.0f;
 	unsigned char m_shading = 0;
 	unsigned char m_unk0x0d = 0;
@@ -191,3 +186,5 @@ struct WorldDB {
 };
 
 static std::unordered_map<const char*, std::vector<Lod*>> g_lod_map;
+
+void handle_world(World& world, const std::string dest);

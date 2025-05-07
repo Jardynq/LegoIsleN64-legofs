@@ -1,38 +1,148 @@
-#include "worlds.h"
-#include "anim.h"
-#include "utils.h"
 #include <cctype>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <climits>
+#include <unordered_map>
 #include <vector>
 #include <malloc.h>
+#include <filesystem>
 
-ColorAlias g_roiColorAliases[22] = {
-	{"inh lego black", 0x21, 0x21, 0x21, 0},
-	{"inh lego black f", 0x21, 0x21, 0x21, 0},
-	{"inh lego black flat", 0x21, 0x21, 0x21, 0},
-	{"inh lego blue", 0x00, 0x54, 0x8c, 0},
-	{"inh lego blue flat", 0x00, 0x54, 0x8c, 0},
-	{"inh lego brown", 0x4a, 0x23, 0x1a, 0},
-	{"inh lego brown flt", 0x4a, 0x23, 0x1a, 0},
-	{"inh lego brown flat", 0x4a, 0x23, 0x1a, 0},
-	{"inh lego drk grey", 0x40, 0x40, 0x40, 0},
-	{"inh lego drk grey flt", 0x40, 0x40, 0x40, 0},
-	{"inh lego dk grey flt", 0x40, 0x40, 0x40, 0},
-	{"inh lego green", 0x00, 0x78, 0x2d, 0},
-	{"inh lego green flat", 0x00, 0x78, 0x2d, 0},
-	{"inh lego lt grey", 0x82, 0x82, 0x82, 0},
-	{"inh lego lt grey flt", 0x82, 0x82, 0x82, 0},
-	{"inh lego lt grey fla", 0x82, 0x82, 0x82, 0},
-	{"inh lego red", 0xcb, 0x12, 0x20, 0},
-	{"inh lego red flat", 0xcb, 0x12, 0x20, 0},
-	{"inh lego white", 0xfa, 0xfa, 0xfa, 0},
-	{"inh lego white flat", 0xfa, 0xfa, 0xfa, 0},
-	{"inh lego yellow", 0xff, 0xb9, 0x00, 0},
-	{"inh lego yellow flat", 0xff, 0xb9, 0x00, 0},
+#include "worlds.h"
+#include "anim.h"
+#include "dump_assets.h"
+#include "utils.h"
+
+namespace fs = std::filesystem;
+
+/*
+	Unknown color alias: indir-g-dbfbrdy0
+	Unknown color alias: indir-g-dbbkfny0
+	Unknown color alias: indir-f-dbfrxly0
+	Unknown color alias: indir-f-dbbkxly0
+	Unknown color alias: indir-g-dbbkxly0
+	Unknown color alias: indir-f-dbbkxly0
+	Unknown color alias: indir-f-dbfrxly0
+	Unknown color alias: indir-g-dbfrxly0
+	Unknown color alias: indir-g-dbfbrdy0
+	Unknown color alias: indir-g-dbbkfny0
+	Unknown color alias: indir-f-chblady0
+	Unknown color alias: indir-f-chblady0
+	Unknown color alias: indir-f-chblady0
+	Unknown color alias: indir-g-chblady0
+	Unknown color alias: indir-g-chmotry0
+	Unknown color alias: indir-g-rcmotry0
+	Unknown color alias: indir-g-rcbacky6
+	Unknown color alias: indir-g-rcfrnty6
+	Unknown color alias: indir-f-rcstery0
+	Unknown color alias: indir-g-rctailya
+	Unknown color alias: indir-f-rcwhl1y0
+	Unknown color alias: indir-f-rcwhl2y0
+	Unknown color alias: indir-g-rcmotry0
+	Unknown color alias: indir-g-rcfrmey0
+	Unknown color alias: indir-g-rcbacky6
+	Unknown color alias: indir-g-rcfrnty6
+	Unknown color alias: indir-f-rcwhl1y0
+	Unknown color alias: indir-f-rcwhl2y0
+	Unknown color alias: indir-g-rctailya
+	Unknown color alias: indir-f-rcstery0
+	Unknown color alias: indir-f-chblady0
+	Unknown color alias: indir-f-chblady0
+	Unknown color alias: indir-f-chblady0
+	Unknown color alias: indir-g-chblady0
+	Unknown color alias: indir-g-chmotry0
+	Unknown color alias: indir-g-dbfbrdy0
+	Unknown color alias: indir-g-dbbkfny0
+	Unknown color alias: indir-f-dbfrxly0
+	Unknown color alias: indir-f-dbbkxly0
+	Unknown color alias: indir-g-dbbkxly0
+	Unknown color alias: indir-f-dbbkxly0
+	Unknown color alias: indir-f-dbfrxly0
+	Unknown color alias: indir-g-dbfrxly0
+	Unknown color alias: indir-g-dbfbrdy0
+	Unknown color alias: indir-g-dbbkfny0
+	Unknown color alias: indir-g-jsfrnty5
+	Unknown color alias: indir-g-jsskiby0
+	Unknown color alias: indir-g-jswnshy5
+	Unknown color alias: indir-g-jsskiby0
+	Unknown color alias: indir-g-jswnshy5
+	Unknown color alias: indir-g-jsfrnty5
+	Unknown color alias: indir-g-jsskiby0
+	Unknown color alias: indir-g-jswnshy5
+	Unknown color alias: indir-g-jsskiby0
+	Unknown color alias: indir-g-jswnshy5
+	Unknown color alias: indir-g-rcmotry0
+	Unknown color alias: indir-g-rcbacky6
+	Unknown color alias: indir-g-rcfrnty6
+	Unknown color alias: indir-f-rcstery0
+	Unknown color alias: indir-g-rctailya
+	Unknown color alias: indir-f-rcwhl1y0
+	Unknown color alias: indir-f-rcwhl2y0
+	Unknown color alias: indir-g-rcmotry0
+	Unknown color alias: indir-g-rcfrmey0
+	Unknown color alias: indir-g-rcbacky6
+	Unknown color alias: indir-g-rcfrnty6
+	Unknown color alias: indir-f-rcwhl1y0
+	Unknown color alias: indir-f-rcwhl2y0
+	Unknown color alias: indir-g-rctailya
+	Unknown color alias: indir-f-rcstery0
+*/
+
+static std::unordered_map<std::string, const char*> g_colorNameMap {
+	{"indir-f-dbfrfny4", "inh lego red"},
+	{"indir-f-dbfbrdy0", "inh lego red"},
+	{"indir-f-dbbkfny0", "inh lego red"},
+	{"indir-f-dbhndly0", "inh lego white"},
+	{"indir-f-dbltbry0", "inh lego white"},
+	{"indir-g-dbltbry0", "inh lego white"},
+	{"indir-g-dbflagy0", "inh lego yellow"},
+	{"indir-f-dbflagy0", "inh lego yellow"},
+	{"indir-f-jsexhy0", "inh lego black"},
+	{"indir-g-jsexhy0", "inh lego black"},
+	{"indir-g-jsbasey0", "inh lego white"},
+	{"indir-f-jsfrnty5", "inh lego black"},
+	{"indir-f-jslsidy0", "inh lego black"},
+	{"indir-f-jsrsidy0", "inh lego black"},
+	{"indir-g-jshndly0", "inh lego red"},
+	{"indir-f-jshndly0", "inh lego red"},
+	{"indir-f-jsskiby0", "inh lego red"},
+	{"indir-f-jsdashy0", "inh lego white"},
+	{"indir-f-jswnshy5", "inh lego white"},
+	{"indir-f-rcfrmey0", "inh lego red"},
+	{"indir-f-rcmotry0", "inh lego white"},
+	{"indir-f-rcbacky6", "inh lego green"},
+	{"indir-f-rcedgey0", "inh lego green"},
+	{"indir-f-rcfrnty6", "inh lego green"},
+	{"indir-f-rctailya", "inh lego white"},
+	{"indir-f-rcstrpy0", "inh lego yellow"},
+	{"indir-f-rcfrmey0", "inh lego red"},
+	{"indir-f-rcsidey0", "inh lego green"},
+};
+
+static std::unordered_map<std::string, ColorA> g_roiColorAliases = {
+	{"inh lego black", ColorA{0x21, 0x21, 0x21, 0}},
+	{"inh lego black f", ColorA{0x21, 0x21, 0x21, 0}},
+	{"inh lego black flat", ColorA{0x21, 0x21, 0x21, 0}},
+	{"inh lego blue", ColorA{0x00, 0x54, 0x8c, 0}},
+	{"inh lego blue flat", ColorA{0x00, 0x54, 0x8c, 0}},
+	{"inh lego brown", ColorA{0x4a, 0x23, 0x1a, 0}},
+	{"inh lego brown flt", ColorA{0x4a, 0x23, 0x1a, 0}},
+	{"inh lego brown flat", ColorA{0x4a, 0x23, 0x1a, 0}},
+	{"inh lego drk grey", ColorA{0x40, 0x40, 0x40, 0}},
+	{"inh lego drk grey flt", ColorA{0x40, 0x40, 0x40, 0}},
+	{"inh lego dk grey flt", ColorA{0x40, 0x40, 0x40, 0}},
+	{"inh lego green", ColorA{0x00, 0x78, 0x2d, 0}},
+	{"inh lego green flat", ColorA{0x00, 0x78, 0x2d, 0}},
+	{"inh lego lt grey", ColorA{0x82, 0x82, 0x82, 0}},
+	{"inh lego lt grey flt", ColorA{0x82, 0x82, 0x82, 0}},
+	{"inh lego lt grey fla", ColorA{0x82, 0x82, 0x82, 0}},
+	{"inh lego red", ColorA{0xcb, 0x12, 0x20, 0}},
+	{"inh lego red flat", ColorA{0xcb, 0x12, 0x20, 0}},
+	{"inh lego white", ColorA{0xfa, 0xfa, 0xfa, 0}},
+	{"inh lego white flat", ColorA{0xfa, 0xfa, 0xfa, 0}},
+	{"inh lego yellow", ColorA{0xff, 0xb9, 0x00, 0}},
+	{"inh lego yellow flat", ColorA{0xff, 0xb9, 0x00, 0}},
 };
 
 bool has_inh_prefix(const char* p_name) {
@@ -51,14 +161,17 @@ bool ColorAliasLookup(
 	float& p_blue,
 	float& p_alpha
 ) {
-	for (int i = 0; i < sizeOfArray(g_roiColorAliases); i++) {
-		if (strcmpi(g_roiColorAliases[i].m_name, p_param) == 0) {
-			p_red = g_roiColorAliases[i].m_red / 255.0;
-			p_green = g_roiColorAliases[i].m_green / 255.0;
-			p_blue = g_roiColorAliases[i].m_blue / 255.0;
-			p_alpha = g_roiColorAliases[i].m_alpha / 255.0;
-			return true;
-		}
+	if (g_colorNameMap.find(p_param) != g_colorNameMap.end()) {
+		p_param = g_colorNameMap[p_param];
+	}
+
+	if (g_roiColorAliases.find(p_param) != g_roiColorAliases.end()) {
+		ColorA color = g_roiColorAliases[p_param];
+		p_red = color.m_red / 255.0;
+		p_green = color.m_green / 255.0;
+		p_blue = color.m_blue / 255.0;
+		p_alpha = color.m_alpha / 255.0;
+		return true;
 	}
 
 	printf("Unknown color alias: %s\n", p_param);
@@ -334,25 +447,6 @@ bool Part::Read(char** mem) {
 	return true;
 }
 
-
-bool ModelRef::Read(char** mem) {
-	unsigned int len = memread(len, mem);
-	m_modelName = ReadString(len, mem);
-
-	m_dataLength = memread(m_dataLength, mem);
-	m_dataOffset = memread(m_dataOffset, mem);
-
-	len = memread(len, mem);
-	m_presenterName = ReadString(len, mem, false);
-	
-	memread(m_location, sizeof(*m_location) * 3, mem);
-	memread(m_direction, sizeof(*m_direction) * 3, mem);
-	memread(m_up, sizeof(*m_up) * 3, mem);
-	m_isVisible = memread(m_isVisible, mem);
-
-	return true;
-}
-
 bool Roi::Read(char** mem, char* memstart) {
 	// If it's parent component with no children, then include that component
 	// Otherwise ignore the parent component, and only include the children.
@@ -475,6 +569,25 @@ void RoiData::SetMaterial(float r, float g, float b, float a, const char* textur
 			}
 		}
 	}
+}
+
+
+bool ModelRef::Read(char** mem) {
+	unsigned int len = memread(len, mem);
+	m_modelName = ReadString(len, mem);
+
+	m_dataLength = memread(m_dataLength, mem);
+	m_dataOffset = memread(m_dataOffset, mem);
+
+	len = memread(len, mem);
+	m_presenterName = ReadString(len, mem, false);
+	
+	memread(m_location, sizeof(*m_location) * 3, mem);
+	memread(m_direction, sizeof(*m_direction) * 3, mem);
+	memread(m_up, sizeof(*m_up) * 3, mem);
+	m_isVisible = memread(m_isVisible, mem);
+
+	return true;
 }
 
 bool Model::Read(char** mem) {
@@ -601,4 +714,61 @@ WorldDB WorldDB::Read(const char* path) {
 
 	delete[] memstart;
 	return result;
+}
+
+
+
+void handle_world(World& world, const std::string dest) {
+	printf("World: %s\n", world.m_worldName);
+
+	std::string world_path = dest + world.m_worldName + "/";
+	fs::create_directory(world_path);
+
+	std::string model_root = world_path + "models/";
+	fs::create_directory(model_root);
+	for (auto model : world.m_models) {
+		std::string model_path = model_root + model->ref->m_modelName + "/";
+		fs::create_directory(model_path);
+		
+		printf("  Model: %s\n", model->ref->m_modelName);
+		for (auto texture : model->m_textures) {
+			printf("    Texture: %s\n", texture->m_name);
+			std::string texture_path = model_path + texture->m_name;
+			dump_texture(*texture, texture_path.c_str());
+		}
+
+		for (auto comp : model->m_roi.m_components) {
+			printf("    Component: %s\n", comp->m_roiname);
+			int i_lod = 0;
+			for (auto lod: comp->m_lods) {
+				printf("      Lod %d: %s\n", i_lod, comp->m_roiname);
+				std::string lod_path = model_path + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
+				dump_lod(*lod, lod_path.c_str());
+				i_lod += 1;
+			}
+		}
+	}
+
+	std::string part_root = world_path + "parts/";
+	fs::create_directory(part_root);
+	for (auto part : world.m_parts) {
+		std::string part_path = part_root + part->ref->m_roiname + "/";
+		fs::create_directory(part_path);
+
+		printf("  Part: %s\n", part->ref->m_roiname);
+		for (auto texture : part->m_textures) {
+			printf("    Texture: %s\n", texture->m_name);
+			std::string texture_path = part_path + texture->m_name;
+			dump_texture(*texture, texture_path.c_str());
+		}
+		for (auto data : part->m_data) {
+			int i_lod = 0;
+			for (auto lod : data->m_lods) {
+				printf("    Lod: %s %d\n", data->m_roiname, i_lod);
+				std::string lod_path = part_path + data->m_roiname + "_" + std::to_string(i_lod) + ".obj";
+				dump_lod(*lod, lod_path.c_str());
+				i_lod += 1;
+			}
+		}
+	}
 }

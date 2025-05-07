@@ -1,6 +1,8 @@
 #include "scripts.h"
 
+#include "anim.h"
 #include "core.h"
+#include "dump_assets.h"
 #include "object.h"
 #include "sitypes.h"
 
@@ -9,9 +11,12 @@
 #include <cstring>
 #include <stdio.h>
 #include <string>
+#include <filesystem>
 
 #include "utils.h"
+#include "worlds.h"
 
+namespace fs = std::filesystem;
 using namespace si;
 
 void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string &dest) {
@@ -83,8 +88,8 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
 			node.type = Type::Path;
 			break;
 		case packconst(".tex"):
-			extension = ".tex";
-			node.type = Type::Presenter;
+			extension = ".bmp";
+			node.type = Type::Texture;
 			break;
 		case packconst(".evt"):
 			extension = ".event";
@@ -121,8 +126,14 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
 			}
 		}
 
-		printf("\rHandling index %hu", node.index);
-		fflush(stdout);
+        /*
+        if (node.extra.size() > 0) {
+            for (auto byte : node.extra) {
+                printf("%c", (char)byte);
+            }
+            printf("\n");
+        }
+        */
 
 		auto object_path = dest + std::to_string(node.index) + extension;
 		if (object->HasChildren()) {
@@ -138,20 +149,43 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
 			}
 			if (!is_empty) {
 				if (node.type == Type::Model) {
-					auto buf = object->ExtractToMemory();
+                    fs::create_directories(object_path);
+
+                    auto buf = object->ExtractToMemory();
 					auto f = fmemopen(buf.data(), buf.size(), "r");
 					if (f == nullptr) {
 						printf("Failed to open memory stream\n");
 						return;
 					}
-					//ReadModelDbPart(f, 0, &parts);
-					printf("HEYEYEYEY\n");
-					//dump_model(lod, object_path.c_str());
-				}
-				else if (node.type == Type::Texture) {
-					// TODO
-				}
-				else {
+
+                    char* mem = buf.data();
+                    Model* model = new Model();
+                    model->Read(&mem);
+                    for (auto texture : model->m_textures) {
+                        std::string texture_path = object_path + "/" + texture->m_name;
+                        dump_texture(*texture, texture_path.c_str());
+                    }
+                    for (auto comp : model->m_roi.m_components) {
+                        int i_lod = 0;
+                        for (auto lod: comp->m_lods) {
+                            std::string lod_path = object_path + "/" + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
+                            dump_lod(*lod, lod_path.c_str());
+                            i_lod += 1;
+                        }
+                    }
+                } else if (node.type == Type::Texture) {
+                    auto buf = object->ExtractToMemory();
+					auto f = fmemopen(buf.data(), buf.size(), "r");
+					if (f == nullptr) {
+						printf("Failed to open memory stream\n");
+						return;
+					}
+
+                    char* mem = buf.data();
+                    Texture* tex = new Texture();
+                    tex->Read(&mem);
+                    dump_texture(*tex, object_path.c_str());
+				} else {
 					object->ExtractToFile(object_path.c_str());
 				}
 			}
