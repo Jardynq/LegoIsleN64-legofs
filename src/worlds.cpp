@@ -720,44 +720,43 @@ void handle_world(World& world, const std::string dest, std::unordered_map<std::
 	// TODO write an index for each world.
 	// I.e. write all the model references
 	std::string index_path = dest + world.m_worldName + ".index";
+
 	for (auto model : world.m_models) {
-		std::string model_path = dest + model->ref->m_modelName + "/";
-		
-		mutexes[model->ref->m_modelName]->lock();
-		fs::create_directory(model_path);
 		for (auto texture : model->m_textures) {
-			std::string texture_path = model_path + texture->m_name;
+			std::string texture_path = dest + texture->m_name;
+			mutexes[texture->m_name]->lock();
 			dump_texture(*texture, texture_path.c_str());
+			mutexes[texture->m_name]->unlock();
 		}
 
 		for (auto comp : model->m_roi.m_components) {
 			int i_lod = 0;
+			mutexes[comp->m_roiname]->lock();
 			for (auto lod: comp->m_lods) {
-				std::string lod_path = model_path + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
+				std::string lod_path = dest + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
 				dump_lod(*lod, lod_path.c_str());
 				i_lod += 1;
 			}
+			mutexes[comp->m_roiname]->unlock();
 		}
-		mutexes[model->ref->m_modelName]->unlock();
 	}
 
 	for (auto part : world.m_parts) {
-		std::string part_path = dest + part->ref->m_roiname + "/";
-		
-		mutexes[part->ref->m_roiname]->lock();
-		fs::create_directory(part_path);
 		for (auto texture : part->m_textures) {
-			std::string texture_path = part_path + texture->m_name;
+			mutexes[texture->m_name]->lock();
+			std::string texture_path = dest + texture->m_name;
 			dump_texture(*texture, texture_path.c_str());
+			mutexes[texture->m_name]->unlock();
 		}
 		for (auto data : part->m_data) {
 			int i_lod = 0;
+			mutexes[data->m_roiname]->lock();
 			for (auto lod : data->m_lods) {
-				std::string lod_path = part_path + data->m_roiname + "_" + std::to_string(i_lod) + ".obj";
+				std::string lod_path = dest + data->m_roiname + "_" + std::to_string(i_lod) + ".obj";
 				dump_lod(*lod, lod_path.c_str());
 				i_lod += 1;
 			}
+			mutexes[data->m_roiname]->unlock();
 		}
-		mutexes[part->ref->m_roiname]->unlock();
 	}
 }

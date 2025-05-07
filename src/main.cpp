@@ -37,10 +37,20 @@ void handle_worlds(const char *path, const std::string &dest, bool is_sync) {
 	std::unordered_map<std::string, std::mutex*> mutexes;
 	for (auto& world : db.worlds) {
 		for (auto& model : world.m_models) {
-			mutexes.insert({model->ref->m_modelName, new std::mutex()});
+			for (auto& texture : model->m_textures) {
+				mutexes.insert({texture->m_name, new std::mutex()});
+			}
+			for (auto& comp : model->m_roi.m_components) {
+				mutexes.insert({comp->m_roiname, new std::mutex()});
+			}
 		}
 		for (auto& part : world.m_parts) {
-			mutexes.insert({part->ref->m_roiname, new std::mutex()});
+			for (auto& texture : part->m_textures) {
+				mutexes.insert({texture->m_name, new std::mutex()});
+			}
+			for (auto& data : part->m_data) {
+				mutexes.insert({data->m_roiname, new std::mutex()});
+			}
 		}
 	}
 
