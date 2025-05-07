@@ -125,15 +125,6 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
 			}
 		}
 
-        /*
-        if (node.extra.size() > 0) {
-            for (auto byte : node.extra) {
-                printf("%c", (char)byte);
-            }
-            printf("\n");
-        }
-        */
-
 		auto object_path = dest + std::to_string(node.index) + extension;
 		if (object->HasChildren()) {
 			handle_node(object, &node, tree, dest);
@@ -148,8 +139,6 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
 			}
 			if (!is_empty) {
 				if (node.type == Type::Model) {
-                    fs::create_directories(object_path);
-
                     auto buf = object->ExtractToMemory();
 					auto f = fmemopen(buf.data(), buf.size(), "r");
 					if (f == nullptr) {
@@ -161,13 +150,13 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
                     Model* model = new Model();
                     model->Read(&mem);
                     for (auto texture : model->m_textures) {
-                        std::string texture_path = object_path + "/" + texture->m_name;
+                        std::string texture_path = dest + texture->m_name;
                         dump_texture(*texture, texture_path.c_str());
                     }
                     for (auto comp : model->m_roi.m_components) {
                         int i_lod = 0;
                         for (auto lod: comp->m_lods) {
-                            std::string lod_path = object_path + "/" + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
+                            std::string lod_path = dest + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
                             dump_lod(*lod, lod_path.c_str());
                             i_lod += 1;
                         }

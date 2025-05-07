@@ -8,14 +8,11 @@
 #include <unordered_map>
 #include <vector>
 #include <malloc.h>
-#include <filesystem>
 
 #include "worlds.h"
 #include "anim.h"
 #include "dump_assets.h"
 #include "utils.h"
-
-namespace fs = std::filesystem;
 
 /*
 	Unknown color alias: indir-g-dbfbrdy0
