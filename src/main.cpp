@@ -34,11 +34,21 @@ void handle_worlds(const char *path, const std::string &dest, bool is_sync) {
 	fs::create_directory(dest);
 	db.worlds.push_back(db.shared);
 	auto threads = std::vector<std::thread>();
+	std::unordered_map<std::string, std::mutex*> mutexes;
+	for (auto& world : db.worlds) {
+		for (auto& model : world.m_models) {
+			mutexes.insert({model->ref->m_modelName, new std::mutex()});
+		}
+		for (auto& part : world.m_parts) {
+			mutexes.insert({part->ref->m_roiname, new std::mutex()});
+		}
+	}
+
 	for (auto& world : db.worlds) {
 		if (is_sync) {
-			handle_world(world, dest);
+			handle_world(world, dest, mutexes);
 		} else {
-			threads.push_back(std::thread(handle_world, std::ref(world), dest));
+			threads.push_back(std::thread(handle_world, std::ref(world), dest, std::ref(mutexes)));
 		}
 	}
 	for (auto& thread : threads) {

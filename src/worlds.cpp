@@ -716,54 +716,48 @@ WorldDB WorldDB::Read(const char* path) {
 }
 
 
-std::mutex g_tex_mutex;
-std::mutex g_lod_mutex;
-void handle_world(World& world, const std::string dest) {
+void handle_world(World& world, const std::string dest, std::unordered_map<std::string, std::mutex*>& mutexes) {
 	// TODO write an index for each world.
 	// I.e. write all the model references
 	std::string index_path = dest + world.m_worldName + ".index";
 	for (auto model : world.m_models) {
 		std::string model_path = dest + model->ref->m_modelName + "/";
-		fs::create_directory(model_path);
 		
+		mutexes[model->ref->m_modelName]->lock();
+		fs::create_directory(model_path);
 		for (auto texture : model->m_textures) {
 			std::string texture_path = model_path + texture->m_name;
-			g_tex_mutex.lock();
 			dump_texture(*texture, texture_path.c_str());
-			g_tex_mutex.unlock();
 		}
 
 		for (auto comp : model->m_roi.m_components) {
 			int i_lod = 0;
 			for (auto lod: comp->m_lods) {
 				std::string lod_path = model_path + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
-				g_lod_mutex.lock();
 				dump_lod(*lod, lod_path.c_str());
-				g_lod_mutex.unlock();
 				i_lod += 1;
 			}
 		}
+		mutexes[model->ref->m_modelName]->unlock();
 	}
 
 	for (auto part : world.m_parts) {
 		std::string part_path = dest + part->ref->m_roiname + "/";
+		
+		mutexes[part->ref->m_roiname]->lock();
 		fs::create_directory(part_path);
-
 		for (auto texture : part->m_textures) {
 			std::string texture_path = part_path + texture->m_name;
-			g_tex_mutex.lock();
 			dump_texture(*texture, texture_path.c_str());
-			g_tex_mutex.unlock();
 		}
 		for (auto data : part->m_data) {
 			int i_lod = 0;
 			for (auto lod : data->m_lods) {
 				std::string lod_path = part_path + data->m_roiname + "_" + std::to_string(i_lod) + ".obj";
-				g_lod_mutex.lock();
 				dump_lod(*lod, lod_path.c_str());
-				g_lod_mutex.unlock();
 				i_lod += 1;
 			}
 		}
+		mutexes[part->ref->m_roiname]->unlock();
 	}
 }

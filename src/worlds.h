@@ -3,6 +3,7 @@
 #include "anim.h"
 #include <cstdio>
 #include <cstring>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -187,4 +188,4 @@ struct WorldDB {
 
 static std::unordered_map<const char*, std::vector<Lod*>> g_lod_map;
 
-void handle_world(World& world, const std::string dest);
+void handle_world(World& world, const std::string dest, std::unordered_map<std::string, std::mutex*>& mutexes);
