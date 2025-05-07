@@ -10,12 +10,10 @@
 #include <cstring>
 #include <stdio.h>
 #include <string>
-#include <filesystem>
 
 #include "utils.h"
 #include "worlds.h"
 
-namespace fs = std::filesystem;
 using namespace si;
 
 void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string &dest) {

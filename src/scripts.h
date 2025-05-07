@@ -15,7 +15,7 @@ enum class Type : unsigned char {
 	Event = 9,
 	Path = 10,
 	Texture = 11,
-	Model = 11,
+	Model = 12,
 };
 
 struct Node {
