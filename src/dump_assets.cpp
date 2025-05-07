@@ -1,10 +1,12 @@
 #include <climits>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 
 #include "dump_assets.h"
 #include "utils.h"
 
+namespace fs = std::filesystem;
 
 bool dump_texture(const Texture& texture, const char* path) {
     FILE* fp = fopen(path, "wb");
@@ -148,7 +150,9 @@ bool dump_lod(const Lod& lod, const char* filepath) {
     const char* matfile = strdup(filepath);
     replace_end(matfile, ".mtl", ".obj");
     dump_mtl(lod, matfile);
-    fprintf(f, "mtllib %s\n", matfile);
+
+    auto matfile_rel = fs::path(filepath).stem().string() + ".mtl";
+    fprintf(f, "mtllib %s\n", matfile_rel.c_str());
     
     unsigned int vertexOffset = 1;
     for (unsigned int m = 0; m < lod.m_melems.size(); ++m) {

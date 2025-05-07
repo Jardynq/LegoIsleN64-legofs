@@ -10,84 +10,30 @@
       "-Isrc/core",
       "-c",
       "-o",
+      "build/anim.o",
+      "src/anim.cpp"
+    ],
+    "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
+    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/anim.cpp",
+    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/anim.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-fno-strict-aliasing",
+      "-Isrc",
+      "-Isrc/core",
+      "-Isrc",
+      "-Isrc/core",
+      "-c",
+      "-o",
       "build/core/sitypes.o",
       "src/core/sitypes.cpp"
     ],
     "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
     "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/core/sitypes.cpp",
     "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/core/sitypes.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++17",
-      "-fno-strict-aliasing",
-      "-Isrc",
-      "-Isrc/core",
-      "-Isrc",
-      "-Isrc/core",
-      "-c",
-      "-o",
-      "build/dump_assets.o",
-      "src/dump_assets.cpp"
-    ],
-    "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
-    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/dump_assets.cpp",
-    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/dump_assets.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++17",
-      "-fno-strict-aliasing",
-      "-Isrc",
-      "-Isrc/core",
-      "-Isrc",
-      "-Isrc/core",
-      "-c",
-      "-o",
-      "build/utils.o",
-      "src/utils.cpp"
-    ],
-    "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
-    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/utils.cpp",
-    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/utils.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++17",
-      "-fno-strict-aliasing",
-      "-Isrc",
-      "-Isrc/core",
-      "-Isrc",
-      "-Isrc/core",
-      "-c",
-      "-o",
-      "build/core/interleaf.o",
-      "src/core/interleaf.cpp"
-    ],
-    "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
-    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/core/interleaf.cpp",
-    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/core/interleaf.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++17",
-      "-fno-strict-aliasing",
-      "-Isrc",
-      "-Isrc/core",
-      "-Isrc",
-      "-Isrc/core",
-      "-c",
-      "-o",
-      "build/main.o",
-      "src/main.cpp"
-    ],
-    "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
-    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/main.cpp",
-    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/main.o"
   },
   {
     "arguments": [
@@ -136,12 +82,12 @@
       "-Isrc/core",
       "-c",
       "-o",
-      "build/core/core.o",
-      "src/core/core.cpp"
+      "build/core/object.o",
+      "src/core/object.cpp"
     ],
     "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
-    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/core/core.cpp",
-    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/core/core.o"
+    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/core/object.cpp",
+    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/core/object.o"
   },
   {
     "arguments": [
@@ -154,12 +100,30 @@
       "-Isrc/core",
       "-c",
       "-o",
-      "build/anim.o",
-      "src/anim.cpp"
+      "build/utils.o",
+      "src/utils.cpp"
     ],
     "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
-    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/anim.cpp",
-    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/anim.o"
+    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/utils.cpp",
+    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/utils.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-fno-strict-aliasing",
+      "-Isrc",
+      "-Isrc/core",
+      "-Isrc",
+      "-Isrc/core",
+      "-c",
+      "-o",
+      "build/main.o",
+      "src/main.cpp"
+    ],
+    "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
+    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/main.cpp",
+    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/main.o"
   },
   {
     "arguments": [
@@ -190,11 +154,47 @@
       "-Isrc/core",
       "-c",
       "-o",
-      "build/core/object.o",
-      "src/core/object.cpp"
+      "build/core/core.o",
+      "src/core/core.cpp"
     ],
     "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
-    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/core/object.cpp",
-    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/core/object.o"
+    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/core/core.cpp",
+    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/core/core.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-fno-strict-aliasing",
+      "-Isrc",
+      "-Isrc/core",
+      "-Isrc",
+      "-Isrc/core",
+      "-c",
+      "-o",
+      "build/dump_assets.o",
+      "src/dump_assets.cpp"
+    ],
+    "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
+    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/dump_assets.cpp",
+    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/dump_assets.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-fno-strict-aliasing",
+      "-Isrc",
+      "-Isrc/core",
+      "-Isrc",
+      "-Isrc/core",
+      "-c",
+      "-o",
+      "build/core/interleaf.o",
+      "src/core/interleaf.cpp"
+    ],
+    "directory": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs",
+    "file": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/src/core/interleaf.cpp",
+    "output": "/mnt/c/Users/svorr/Datalogi/BachelorProject/LegoIsleN64-legofs/build/core/interleaf.o"
   }
 ]
