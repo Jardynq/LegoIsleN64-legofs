@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <climits>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 #include <malloc.h>
@@ -717,56 +718,52 @@ WorldDB WorldDB::Read(const char* path) {
 }
 
 
-
+std::mutex g_tex_mutex;
+std::mutex g_lod_mutex;
 void handle_world(World& world, const std::string dest) {
-	printf("World: %s\n", world.m_worldName);
-
-	std::string world_path = dest + world.m_worldName + "/";
-	fs::create_directory(world_path);
-
-	std::string model_root = world_path + "models/";
-	fs::create_directory(model_root);
+	// TODO write an index for each world.
+	// I.e. write all the model references
+	std::string index_path = dest + world.m_worldName + ".index";
 	for (auto model : world.m_models) {
-		std::string model_path = model_root + model->ref->m_modelName + "/";
+		std::string model_path = dest + model->ref->m_modelName + "/";
 		fs::create_directory(model_path);
 		
-		printf("  Model: %s\n", model->ref->m_modelName);
 		for (auto texture : model->m_textures) {
-			printf("    Texture: %s\n", texture->m_name);
 			std::string texture_path = model_path + texture->m_name;
+			g_tex_mutex.lock();
 			dump_texture(*texture, texture_path.c_str());
+			g_tex_mutex.unlock();
 		}
 
 		for (auto comp : model->m_roi.m_components) {
-			printf("    Component: %s\n", comp->m_roiname);
 			int i_lod = 0;
 			for (auto lod: comp->m_lods) {
-				printf("      Lod %d: %s\n", i_lod, comp->m_roiname);
 				std::string lod_path = model_path + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
+				g_lod_mutex.lock();
 				dump_lod(*lod, lod_path.c_str());
+				g_lod_mutex.unlock();
 				i_lod += 1;
 			}
 		}
 	}
 
-	std::string part_root = world_path + "parts/";
-	fs::create_directory(part_root);
 	for (auto part : world.m_parts) {
-		std::string part_path = part_root + part->ref->m_roiname + "/";
+		std::string part_path = dest + part->ref->m_roiname + "/";
 		fs::create_directory(part_path);
 
-		printf("  Part: %s\n", part->ref->m_roiname);
 		for (auto texture : part->m_textures) {
-			printf("    Texture: %s\n", texture->m_name);
 			std::string texture_path = part_path + texture->m_name;
+			g_tex_mutex.lock();
 			dump_texture(*texture, texture_path.c_str());
+			g_tex_mutex.unlock();
 		}
 		for (auto data : part->m_data) {
 			int i_lod = 0;
 			for (auto lod : data->m_lods) {
-				printf("    Lod: %s %d\n", data->m_roiname, i_lod);
 				std::string lod_path = part_path + data->m_roiname + "_" + std::to_string(i_lod) + ".obj";
+				g_lod_mutex.lock();
 				dump_lod(*lod, lod_path.c_str());
+				g_lod_mutex.unlock();
 				i_lod += 1;
 			}
 		}

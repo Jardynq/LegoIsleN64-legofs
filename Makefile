@@ -2,8 +2,9 @@ SOURCE_DIR=src
 BUILD_DIR=build
 
 CXX := g++
-CXXFLAGS ?= 
-CXXFLAGS += -O1 -std=c++17 # -fsanitize=address 
+CXXFLAGS += -std=c++17 # -fsanitize=address 
+CXXFLAGS += -I$(SOURCE_DIR) -I$(SOURCE_DIR)/core
+CXXFLAGS += $(FLAGS)
 
 TARGET := sidump
 SRCS := $(shell find $(SOURCE_DIR) -name '*.cpp')
