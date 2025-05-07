@@ -238,7 +238,6 @@ bool MeshInfo::Read(char** mem) {
 }
 
 bool Mesh::Read(char** mem) {
-
 	return true;
 }
 
@@ -651,7 +650,6 @@ bool World::Read(char** mem, char* memstart) {
 		part->Read(&mempart);
 		m_parts.push_back(part);
 	}
-
 	for (auto ref : ref->m_modelrefs) {
 		char* memmodel = memstart + ref->m_dataOffset;
 		Model* model = new Model();

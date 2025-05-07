@@ -2,7 +2,7 @@ SOURCE_DIR=src
 BUILD_DIR=build
 
 CXX := g++
-CXXFLAGS += -std=c++17 # -fsanitize=address 
+CXXFLAGS += -std=c++17 -fno-strict-aliasing # -fsanitize=address 
 CXXFLAGS += -I$(SOURCE_DIR) -I$(SOURCE_DIR)/core
 CXXFLAGS += $(FLAGS)
 
