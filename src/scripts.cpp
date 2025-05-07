@@ -1,6 +1,5 @@
 #include "scripts.h"
 
-#include "anim.h"
 #include "core.h"
 #include "dump_assets.h"
 #include "object.h"
