@@ -366,15 +366,18 @@ bool Lod::Read(char** mem) {
 bool TextureData::Read(char** mem) {
 	m_width = memread(m_width, mem);
 	m_height = memread(m_height, mem);
-	m_count = memread(m_count, mem);
-	m_palette.resize(m_count);
-	for (unsigned int i = 0; i < m_count; i++) {
-		m_palette[i].m_red = memread(m_palette[i].m_red, mem);
-		m_palette[i].m_green = memread(m_palette[i].m_green, mem);
-		m_palette[i].m_blue = memread(m_palette[i].m_blue, mem);
+	unsigned int count = memread(count, mem);
+
+	for (unsigned int i = 0; i < count; i++) {
+		Color color;
+		color.m_red = memread(color.m_red, mem);
+		color.m_green = memread(color.m_green, mem);
+		color.m_blue = memread(color.m_blue, mem);
+		m_palette.push_back(color);
 	}
-	m_bits = new unsigned char[m_width * m_height];
-	memread(m_bits, m_width * m_height, mem);
+
+	m_bits.resize(m_width * m_height);
+	memread(m_bits.data(), m_width * m_height, mem);
 
 	return true;
 }
@@ -756,4 +759,6 @@ void handle_world(World& world, const std::string dest, std::unordered_map<std::
 			mutexes[data->m_roiname]->unlock();
 		}
 	}
+
+	world.free();
 }

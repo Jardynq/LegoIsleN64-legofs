@@ -1,6 +1,5 @@
 #pragma once
 
-#include "anim.h"
 #include <cstdio>
 #include <cstring>
 #include <mutex>
@@ -8,12 +7,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "anim.h"
+#include "utils.h"
+
 
 struct ColorA {
-	int m_red = 255;
-	int m_green = 0;
-	int m_blue = 255;
-	int m_alpha = 255;
+	unsigned char m_red = 255;
+	unsigned char m_green = 0;
+	unsigned char m_blue = 255;
+	unsigned char m_alpha = 255;
 };
 
 struct Color {
@@ -24,16 +26,23 @@ struct Color {
 
 struct TextureData {
 	bool Read(char** mem);
+	void free() {
+		FREE_VEC(m_palette);
+		FREE_VEC(m_bits);
+	}
 
 	unsigned int m_width = 0;
 	unsigned int m_height = 0;
-	unsigned int m_count = 0;
 	std::vector<Color> m_palette;
-	unsigned char* m_bits = nullptr;
+	std::vector<unsigned char> m_bits;
 };
 
 struct Texture {
 	bool Read(char** mem);
+	void free() {
+		FREE_ARR(m_name);
+		FREE_OBJ(m_data);
+	}
 
 	const char* m_name = nullptr;
 	TextureData m_data;
@@ -41,6 +50,11 @@ struct Texture {
 
 struct MeshInfo {
 	bool Read(char** mem);
+	void free() {
+		FREE_ARR(m_textureName);
+		FREE_ARR(m_materialName);
+		FREE_ARR(m_unk0x10);
+	}
 
 	enum { e_flat, e_gouraud, e_wireframe };
 	struct Unknown {
@@ -66,6 +80,14 @@ struct MeshInfo {
 
 struct Mesh {
 	bool Read(char** mem);
+	void free() {
+		FREE_ARR(textureName);
+		FREE_ARR(pFaceIndices);
+		FREE_ARR(pTextureIndices);
+		//FREE_ARR(pPositions);
+		//FREE_ARR(pNormals);
+		//FREE_ARR(pTextureCoordinates);
+	}
 
 	const char* textureName = nullptr;
 	float m_red = 0.0f;
@@ -85,6 +107,9 @@ struct Mesh {
 
 struct Lod {
 	bool Read(char** mem);
+	void free() {
+		FREE_PTR_VEC(m_melems);
+	}
 
 	std::vector<Mesh*> m_melems;
 	unsigned int m_numVertices = 0;
@@ -95,6 +120,9 @@ struct Lod {
 
 struct PartRef {
 	bool Read(char** mem);
+	void free() {
+		FREE_ARR(m_roiname);
+	}
 
 	const char* m_roiname = nullptr;
 	unsigned int m_partDataLength = 0;
@@ -103,6 +131,10 @@ struct PartRef {
 
 struct PartData {
 	bool Read(char** mem);
+	void free() {
+		FREE_ARR(m_roiname);
+		FREE_PTR_VEC(m_lods);
+	}
 
 	const char* m_roiname = nullptr;
 	std::vector<Lod*> m_lods;
@@ -111,6 +143,11 @@ struct PartData {
 
 struct Part {
 	bool Read(char** mem);
+	void free() {
+		FREE_PTR(ref);
+		FREE_PTR_VEC(m_textures);
+		FREE_PTR_VEC(m_data);
+	}
 
 	PartRef* ref = nullptr;
 	std::vector<Texture*> m_textures;
@@ -120,7 +157,12 @@ struct Part {
 struct RoiData {
 	bool Read(char** mem, char* memstart);
 	void SetMaterial(float r, float g, float b, float a, const char* textureName);
-	
+	void free() {
+		FREE_ARR(m_name);
+		FREE_ARR(m_roiname);
+		FREE_PTR_VEC(m_lods);
+	}
+
 	bool m_lodsAlreadyLoaded = 0;
 	const char* m_name = nullptr;
 	const char* m_roiname = nullptr;
@@ -135,12 +177,19 @@ struct RoiData {
 
 struct Roi {
 	bool Read(char** mem, char* memstart);
+	void free() {
+		FREE_PTR_VEC(m_components);
+	}
 	
 	std::vector<RoiData*> m_components;
 };
 
 struct ModelRef {
 	bool Read(char** mem);
+	void free() {
+		FREE_ARR(m_modelName);
+		FREE_ARR(m_presenterName);
+	}
 
 	const char* m_modelName = nullptr;
 	unsigned int m_dataLength = 0;
@@ -154,6 +203,13 @@ struct ModelRef {
 
 struct Model {
 	bool Read(char** mem);
+	void free() {
+		FREE_PTR(ref);
+		FREE_ARR(m_roiname);
+		FREE_OBJ(m_anim);
+		FREE_OBJ(m_roi);
+		FREE_PTR_VEC(m_textures);
+	}
 
 	ModelRef* ref;
 	const char* m_roiname = nullptr;
@@ -164,6 +220,11 @@ struct Model {
 
 struct WorldRef {
 	bool Read(char** mem);
+	void free() {
+		FREE_ARR(m_worldName);
+		FREE_PTR_VEC(m_partrefs);
+		FREE_PTR_VEC(m_modelrefs);
+	}
 
 	const char* m_worldName = nullptr;
 	std::vector<PartRef*> m_partrefs;
@@ -172,6 +233,11 @@ struct WorldRef {
 
 struct World {
 	bool Read(char** mem, char* memstart);
+	void free() {
+		FREE_ARR(m_worldName);
+		FREE_PTR_VEC(m_parts);
+		FREE_PTR_VEC(m_models);
+	}
 
 	const char* m_worldName = nullptr;
 	std::vector<Part*> m_parts;
@@ -180,6 +246,11 @@ struct World {
 
 struct WorldDB {
 	static WorldDB Read(const char* path);
+	void free() {
+		FREE_OBJ(shared);
+		FREE_OBJ_VEC(refs);
+		FREE_OBJ_VEC(worlds);
+	}
 
 	World shared;
 	std::vector<WorldRef> refs;

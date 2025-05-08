@@ -11,10 +11,151 @@
 #include <stdio.h>
 #include <string>
 
+#include "types.h"
 #include "utils.h"
 #include "worlds.h"
 
 using namespace si;
+
+void dump_node(const Node &node, const char* extension, Object* object, const std::string &dest) {
+    auto object_path = dest + std::to_string(node.index) + extension;
+
+    bool is_empty = true;
+    for (auto chunk : object->data()) {
+        if (chunk.size() != 0) {
+            is_empty = false;
+            break;
+        }
+    }
+    if (is_empty) {
+        return;
+    }
+
+    if (node.type == Type::Model) {
+        auto buf = object->ExtractToMemory();
+        char* mem = buf.data();
+        Model* model = new Model();
+        model->Read(&mem);
+        for (auto texture : model->m_textures) {
+            std::string texture_path = dest + texture->m_name;
+            dump_texture(*texture, texture_path.c_str());
+        }
+        for (auto comp : model->m_roi.m_components) {
+            int i_lod = 0;
+            for (auto lod: comp->m_lods) {
+                std::string lod_path = dest + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
+                dump_lod(*lod, lod_path.c_str());
+                i_lod += 1;
+            }
+        }
+        model->free();
+        delete model;
+        buf.clear();
+    } else {
+        object->ExtractToFile(object_path.c_str());
+    }
+}
+
+const char* parse_node(Object* object, Node& node) {
+    node.index = object->id();
+    node.path = to_owned(object->filename());
+    node.name = to_owned(object->name());
+    node.presenter = to_owned(object->presenter_);
+    for (auto byte : object->extra_) {
+        node.extra.push_back(byte);
+    }
+
+    node.duration = object->duration_;
+    node.loops = object->loops_;
+    node.start_time = object->time_offset_;
+    node.flags = object->flags_;
+    node.location[0] = object->location_.x;
+    node.location[1] = object->location_.y;
+    node.location[2] = object->location_.z;
+    node.direction[0] = object->direction_.x;
+    node.direction[1] = object->direction_.y;
+    node.direction[2] = object->direction_.z;
+    node.up[0] = object->up_.x;
+    node.up[1] = object->up_.y;
+    node.up[2] = object->up_.z;
+
+    const char *extension = nullptr;
+    switch (pack_extension(object->filename())) {
+    case packconst(".wav"):
+        extension = ".wav";
+        node.type = Type::Wave;
+        break;
+    case packconst(".smk"):
+        extension = ".smk";
+        node.type = Type::Smacker;
+        break;
+    case packconst(".flc"):
+        // Stolen from the qt viewer.
+        // Used to flip the flc upside down.
+        if (object->name().find("_Pho_") != std::string::npos) {
+            extension = ".pho";
+        }
+        else {
+            extension = ".flc";
+        }
+        node.type = Type::Flic;
+        break;
+    case packconst(".bmp"):
+        extension = ".bmp";
+        node.type = Type::Bitmap;
+        break;
+    case packconst(".obj"):
+        extension = ".obj";
+        node.type = Type::Object;
+        break;
+    case packconst(".ani"):
+        extension = ".ani";
+        node.type = Type::Animation;
+        break;
+    case packconst(".gph"):
+        extension = ".path";
+        node.type = Type::Path;
+        break;
+    case packconst(".tex"):
+        extension = ".bmp";
+        node.type = Type::Texture;
+        break;
+    case packconst(".evt"):
+        extension = ".event";
+        node.type = Type::Event;
+        break;
+    case packconst(".mod"):
+        extension = ".model";
+        node.type = Type::Model;
+        break;
+    default:
+        switch (object->type()) {
+        case MxOb::World:
+            extension = ".world";
+            node.type = Type::World;
+            break;
+        case MxOb::Presenter:
+            extension = ".pres";
+            node.type = Type::Presenter;
+            break;
+        case MxOb::Event:
+            extension = ".event";
+            node.type = Type::Event;
+            break;
+        case MxOb::Object:
+            extension = ".obj";
+            node.type = Type::Object;
+            break;
+        case MxOb::Null:
+            return nullptr;
+        default:
+            extension = ".unknown";
+            node.type = Type::Null;
+            break;
+        }
+    }
+    return extension;
+}
 
 void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string &dest) {
 	if (core_parent == nullptr) {
@@ -23,158 +164,20 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
 
 	for (auto child : core_parent->GetChildren()) {
 		auto object = (Object *)child;
+        if (object == nullptr) {
+            continue;
+        }
 
 		Node node;
-		node.index = object->id();
-		node.path = to_owned(object->filename());
-		node.name = to_owned(object->name());
-		node.presenter = to_owned(object->presenter_);
-		for (auto byte : object->extra_) {
-			node.extra.push_back(byte);
-		}
+		const char *extension = parse_node(object, node);
+        if (extension == nullptr) {
+            continue;
+        }
 
-		node.duration = object->duration_;
-		node.loops = object->loops_;
-		node.start_time = object->time_offset_;
-		node.flags = object->flags_;
-		node.location[0] = object->location_.x;
-		node.location[1] = object->location_.y;
-		node.location[2] = object->location_.z;
-		node.direction[0] = object->direction_.x;
-		node.direction[1] = object->direction_.y;
-		node.direction[2] = object->direction_.z;
-		node.up[0] = object->up_.x;
-		node.up[1] = object->up_.y;
-		node.up[2] = object->up_.z;
-
-		const char *extension = nullptr;
-		switch (pack_extension(object->filename())) {
-		case packconst(".wav"):
-			extension = ".wav";
-			node.type = Type::Wave;
-			break;
-		case packconst(".smk"):
-			extension = ".smk";
-			node.type = Type::Smacker;
-			break;
-		case packconst(".flc"):
-			// Stolen from the qt viewer.
-			// Used to flip the flc upside down.
-			if (object->name().find("_Pho_") != std::string::npos) {
-				extension = ".pho";
-			}
-			else {
-				extension = ".flc";
-			}
-			node.type = Type::Flic;
-			break;
-		case packconst(".bmp"):
-			extension = ".bmp";
-			node.type = Type::Bitmap;
-			break;
-		case packconst(".obj"):
-			extension = ".obj";
-			node.type = Type::Object;
-			break;
-		case packconst(".ani"):
-			extension = ".ani";
-			node.type = Type::Animation;
-			break;
-		case packconst(".gph"):
-			extension = ".path";
-			node.type = Type::Path;
-			break;
-		case packconst(".tex"):
-			extension = ".bmp";
-			node.type = Type::Texture;
-			break;
-		case packconst(".evt"):
-			extension = ".event";
-			node.type = Type::Event;
-			break;
-		case packconst(".mod"):
-			extension = ".model";
-			node.type = Type::Model;
-			break;
-		default:
-			switch (object->type()) {
-			case MxOb::World:
-				extension = ".world";
-				node.type = Type::World;
-			    break;
-			case MxOb::Presenter:
-				extension = ".pres";
-				node.type = Type::Presenter;
-			    break;
-			case MxOb::Event:
-				extension = ".event";
-				node.type = Type::Event;
-			    break;
-			case MxOb::Object:
-				extension = ".obj";
-				node.type = Type::Object;
-			    break;
-			case MxOb::Null:
-			    continue;
-			default:
-				extension = ".unknown";
-				node.type = Type::Null;
-			    break;
-			}
-		}
-
-		auto object_path = dest + std::to_string(node.index) + extension;
 		if (object->HasChildren()) {
 			handle_node(object, &node, tree, dest);
-		}
-		else {
-			bool is_empty = true;
-			for (auto chunk : object->data()) {
-				if (chunk.size() != 0) {
-					is_empty = false;
-					break;
-				}
-			}
-			if (!is_empty) {
-				if (node.type == Type::Model) {
-                    auto buf = object->ExtractToMemory();
-					auto f = fmemopen(buf.data(), buf.size(), "r");
-					if (f == nullptr) {
-						printf("Failed to open memory stream\n");
-						return;
-					}
-
-                    char* mem = buf.data();
-                    Model* model = new Model();
-                    model->Read(&mem);
-                    for (auto texture : model->m_textures) {
-                        std::string texture_path = dest + texture->m_name;
-                        dump_texture(*texture, texture_path.c_str());
-                    }
-                    for (auto comp : model->m_roi.m_components) {
-                        int i_lod = 0;
-                        for (auto lod: comp->m_lods) {
-                            std::string lod_path = dest + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
-                            dump_lod(*lod, lod_path.c_str());
-                            i_lod += 1;
-                        }
-                    }
-                } else if (node.type == Type::Texture) {
-                    auto buf = object->ExtractToMemory();
-					auto f = fmemopen(buf.data(), buf.size(), "r");
-					if (f == nullptr) {
-						printf("Failed to open memory stream\n");
-						return;
-					}
-
-                    char* mem = buf.data();
-                    Texture* tex = new Texture();
-                    tex->Read(&mem);
-                    dump_texture(*tex, object_path.c_str());
-				} else {
-					object->ExtractToFile(object_path.c_str());
-				}
-			}
+		} else {
+            dump_node(node, extension, object, dest);
 		}
 
 		if (parent != nullptr) {
@@ -268,7 +271,7 @@ void fill_holes(Index &tree, const std::string &dest) {
 void write_index(Index &tree, const std::string &dest) {
 	FILE *file = fopen((dest + "index").c_str(), "wb");
 	if (file == nullptr) {
-		fprintf(stderr, "Failed to open index file for writing\n");
+		fprintf(stderr, "Failed to open index file for writing: %s\n", (dest + "index").c_str());
 		return;
 	}
 

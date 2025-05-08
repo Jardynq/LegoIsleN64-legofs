@@ -5,6 +5,14 @@
 #include <cstring>
 #include <string>
 
+#ifndef FREE_ARR
+#define FREE_ARR(x) if (x) { delete[] x; x = nullptr; }
+#define FREE_OBJ(x) x.free();
+#define FREE_PTR(x) if (x) { x->free(); delete x; x = nullptr; }
+#define FREE_VEC(x) x.clear();
+#define FREE_OBJ_VEC(x) for (auto& i : x) { i.free(); } x.clear();
+#define FREE_PTR_VEC(x) for (auto& i : x) { i->free(); delete i; } x.clear();
+#endif
 
 #ifndef sizeOfArray
 #define sizeOfArray(arr) (sizeof(arr) / sizeof((arr)[0]))
@@ -22,7 +30,7 @@ template <typename T> T memread(T _, char** mem) {
 	return result;
 }
 template <typename T> void memread(T* dst, unsigned int n, char** mem) {
-	memcpy((char*)dst, *mem, n);
+	memmove((char*)dst, *mem, n);
 	*mem = *mem + n;
 }
 

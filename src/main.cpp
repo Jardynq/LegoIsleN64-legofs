@@ -18,7 +18,7 @@ void handle_scripts(std::string path, std::string dest) {
 	Index tree;
 	Interleaf weaver;
 	if (weaver.Read(path.c_str()) != Interleaf::ERROR_SUCCESS) {
-		printf("Failed to read %s", path.c_str());
+		printf("Failed to read %s\n", path.c_str());
 	}
 	handle_node((Core *)&weaver, nullptr, &tree, dest);
 	fill_holes(tree, dest);
@@ -30,10 +30,12 @@ void handle_scripts(std::string path, std::string dest) {
 }
 
 void handle_worlds(const char *path, const std::string &dest, bool is_sync) {
-	auto db = WorldDB::Read(path);
 	fs::create_directory(dest);
+	
+	auto db = WorldDB::Read(path);
 	db.worlds.push_back(db.shared);
-	auto threads = std::vector<std::thread>();
+	
+	std::vector<std::thread> threads;
 	std::unordered_map<std::string, std::mutex*> mutexes;
 	for (auto& world : db.worlds) {
 		for (auto& model : world.m_models) {
@@ -111,24 +113,26 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "In 'worlds' mode, the path must be a file\n");
 			return -1;
 		}
-		auto weavers = std::vector<Interleaf*>();
-		auto threads = std::vector<std::thread>();
+		auto thread_data = std::vector<std::tuple<std::string, std::string>>();
 		for (const auto& file : fs::recursive_directory_iterator(path)) {
 			if (fs::is_regular_file(file)) {
 				fs::path rel_path = fs::relative(file.path(), path);
 				fs::path dest_path = destination / rel_path;
 				fs::create_directories(dest_path);
-
+				
 				std::string file_str = file.path().string();
 				std::string dest_str = dest_path.string() + "/";
 				if (is_sync) {
 					handle_scripts(file_str, dest_str);
 				} else {
-					threads.push_back(
-						std::thread(handle_scripts, file_str, dest_str)
-					);
+					thread_data.push_back(std::tuple(file_str, dest_str));
 				}
 			}
+		}
+		
+		auto threads = std::vector<std::thread>();
+		for (auto& data : thread_data) {
+			threads.push_back(std::thread(handle_scripts, std::get<0>(data), std::get<1>(data)));
 		}
 		for (auto& thread : threads) {
 			thread.join();

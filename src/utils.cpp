@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <cstdint>
+#include <cstring>
 
 
 void replace_end(const char* name, const char* new_ext, const char* old_ext) {
@@ -17,7 +18,7 @@ void replace_end(const char* name, const char* new_ext, const char* old_ext) {
         }
     }
     char* head = (char*)name + len - len_new;
-    memcpy (head, new_ext, len_new);
+    memmove(head, new_ext, len_new);
 }
 
 
@@ -80,7 +81,7 @@ int strcmpi(const char* s1, const char* s2) {
 
 const char *to_owned(const std::string &str) {
 	char *result = (char *)malloc(str.length() + 1);
-	memcpy(result, str.c_str(), str.length());
+	memmove(result, str.c_str(), str.length());
 	result[str.length()] = 0;
 	return result;
 }
