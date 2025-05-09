@@ -169,7 +169,7 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
         }
 
 		Node node;
-		const char *extension = parse_node(object, node);
+		const char* extension = parse_node(object, node);
         if (extension == nullptr) {
             continue;
         }
@@ -193,6 +193,9 @@ void handle_node(Core *core_parent, Node *parent, Index *tree, const std::string
 void write_node(const Node &node, FILE *file) {
 	fwrite2(&node.type, sizeof(node.type), 1, file);
 	fwrite2(&node.index, sizeof(node.index), 1, file);
+    if (node.type == Type::Null) {
+        return;
+    }
 
 	unsigned short size = strlen(node.name);
 	fwrite2(&size, sizeof(size), 1, file);
@@ -278,7 +281,7 @@ void write_index(Index &tree, const std::string &dest) {
 	unsigned short size = tree.nodes.size();
 	fwrite2(&size, sizeof(size), 1, file);
 	for (auto node : tree.nodes) {
-		write_node(node, file);
+        write_node(node, file);
 	}
 
 	fclose(file);
