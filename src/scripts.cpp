@@ -117,7 +117,7 @@ const char* parse_node(Object* object, Node& node) {
         node.type = Type::Path;
         break;
     case packconst(".tex"):
-        extension = ".bmp";
+        extension = ".tex";
         node.type = Type::Texture;
         break;
     case packconst(".evt"):
