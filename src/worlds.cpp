@@ -760,5 +760,5 @@ void handle_world(World& world, const std::string dest, std::unordered_map<std::
 		}
 	}
 
-	world.free();
+	//world.free();
 }
