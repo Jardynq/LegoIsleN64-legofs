@@ -223,7 +223,7 @@ bool MeshInfo::Read(char** mem) {
 	unsigned int textureLength = memread(textureLength, mem);
 	if (textureLength > 0) {
         m_textureName = ReadString(textureLength, mem);
-		replace_end(m_textureName, ".bmp", ".gif");
+		replace_end(m_textureName, ".png", ".gif");
     }
 
 	unsigned int materialLength = memread(materialLength, mem);
@@ -396,7 +396,7 @@ bool Texture::Read(char** mem) {
 		m_data.Read(mem);
 	}
 
-	replace_end(m_name, ".bmp", ".gif");
+	replace_end(m_name, ".png", ".gif");
 	return true;
 }
 
@@ -475,6 +475,7 @@ bool RoiData::Read(char** mem, char* memstart) {
 
 	unsigned int texNameLen = memread(texNameLen, mem);
 	const char* textureName = ReadString(texNameLen, mem);
+	replace_end(textureName, ".png", ".gif");
 
 	m_lodsAlreadyLoaded = memread(m_lodsAlreadyLoaded, mem);
 	if (m_lodsAlreadyLoaded) {
@@ -725,6 +726,7 @@ void handle_world(World& world, const std::string dest, std::unordered_map<std::
 		for (auto texture : model->m_textures) {
 			std::string texture_path = dest + texture->m_name;
 			mutexes[texture->m_name]->lock();
+			replace_end(texture_path.c_str(), ".bmp", ".png");
 			dump_texture(*texture, texture_path.c_str());
 			mutexes[texture->m_name]->unlock();
 		}
@@ -745,6 +747,7 @@ void handle_world(World& world, const std::string dest, std::unordered_map<std::
 		for (auto texture : part->m_textures) {
 			mutexes[texture->m_name]->lock();
 			std::string texture_path = dest + texture->m_name;
+			replace_end(texture_path.c_str(), ".bmp", ".png");
 			dump_texture(*texture, texture_path.c_str());
 			mutexes[texture->m_name]->unlock();
 		}

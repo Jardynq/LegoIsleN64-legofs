@@ -38,6 +38,7 @@ void dump_node(const Node &node, const char* extension, Object* object, const st
         model->Read(&mem);
         for (auto texture : model->m_textures) {
             std::string texture_path = dest + texture->m_name;
+            replace_end(texture_path.c_str(), ".bmp", ".png");
             dump_texture(*texture, texture_path.c_str());
         }
         for (auto comp : model->m_roi.m_components) {
