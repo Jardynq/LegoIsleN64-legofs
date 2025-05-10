@@ -1,4 +1,5 @@
 #include <climits>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
@@ -69,11 +70,9 @@ bool dump_texture(const Texture& texture, const char* path) {
 
 
 struct Vertex {
-    float position[3];
-    float normal[3];
-    float tu;
-    float tv;
-    float color[3];
+    float p[3] = {0.0f, 0.0f, 0.0f};
+    float n[3] = {0.0f, 0.0f, 0.0f};
+    float t[2] = {0.0f, 0.0f};
 };
 void CreateMesh(
 	unsigned int faceCount,
@@ -98,18 +97,18 @@ void CreateMesh(
         unsigned short* indexPtr = (unsigned short*)&faceIndices[i];
 		if ((*(indexPtr + 1) >> 0x0f) & 0x01) {
             unsigned int j = *indexPtr;
-			vertices[index].position[0] = pPositions[j][0];
-			vertices[index].position[1] = pPositions[j][1];
-			vertices[index].position[2] = pPositions[j][2];
+			vertices[index].p[0] = pPositions[j][0];
+			vertices[index].p[1] = pPositions[j][1];
+			vertices[index].p[2] = pPositions[j][2];
 			j = *(indexPtr + 1) & SHRT_MAX;
-			vertices[index].normal[0] = pNormals[j][0];
-			vertices[index].normal[1] = pNormals[j][1];
-			vertices[index].normal[2] = pNormals[j][2];
+			//vertices[index].n[0] = pNormals[j][0];
+			//vertices[index].n[1] = pNormals[j][1];
+			//vertices[index].n[2] = pNormals[j][2];
 
             if (pTextureIndices != NULL && pTextureCoordinates != NULL) {
 				j = ((unsigned int*) pTextureIndices)[i];
-                vertices[index].tu = 1.0f - pTextureCoordinates[j][0];
-                vertices[index].tv = pTextureCoordinates[j][1];
+                vertices[index].t[0] = 1.0f - pTextureCoordinates[j][0];
+                vertices[index].t[1] = pTextureCoordinates[j][1];
             }
 
 			fData[i] = index;
@@ -176,19 +175,61 @@ bool dump_lod(const Lod& lod, const char* filepath) {
         fprintf(f, "usemtl mesh_%u_material\n", m);
 
         for (unsigned int i = 0; i < mesh->vertexCount; ++i) {
-            auto p = vertices[i].position;
+            auto p = vertices[i].p;
             fprintf(f, "v %f %f %f\n", p[0], p[1], p[2]);
         }
 
+        for (unsigned int i = 0; i < mesh->faceCount * 3; i += 3) {
+            unsigned int a = indices[i] + vertexOffset;
+            unsigned int b = indices[i + 1] + vertexOffset;
+            unsigned int c = indices[i + 2] + vertexOffset;
+
+            // Calculate normals from face indices
+            Vertex& va = vertices[indices[i]];
+            Vertex& vb = vertices[indices[i + 1]];
+            Vertex& vc = vertices[indices[i + 2]];
+            float ab[3] = {
+                vb.p[0] - va.p[0],
+                vb.p[1] - va.p[1], 
+                vb.p[2] - va.p[2]
+            };
+            float ac[3] = {
+                vc.p[0] - va.p[0],
+                vc.p[1] - va.p[1], 
+                vc.p[2] - va.p[2]
+            };
+            float cross[3] = {
+                ab[1] * ac[2] - ab[2] * ac[1],
+                ab[2] * ac[0] - ab[0] * ac[2],
+                ab[0] * ac[1] - ab[1] * ac[0]
+            };
+
+            va.n[0] += cross[0];
+            va.n[1] += cross[1];
+            va.n[2] += cross[2];
+            vb.n[0] += cross[0];
+            vb.n[1] += cross[1];
+            vb.n[2] += cross[2];
+            vc.n[0] += cross[0];
+            vc.n[1] += cross[1];
+            vc.n[2] += cross[2];
+        }
+
         for (unsigned int i = 0; i < mesh->vertexCount; ++i) {
-            auto n = vertices[i].normal;
+            auto n = vertices[i].n;
+            float length = sqrtf(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+            if (length > 0.0f) {
+                n[0] /= length;
+                n[1] /= length;
+                n[2] /= length;
+            }
             fprintf(f, "vn %f %f %f\n", n[0], n[1], n[2]);
         }
 
         if (mesh->pTextureCoordinates) {
             for (unsigned int i = 0; i < mesh->vertexCount; ++i) {
-                float u = vertices[i].tu;
-                float v = vertices[i].tv;
+                float u = vertices[i].t[0];
+                float v = vertices[i].t[1];
                 fprintf(f, "vt %f %f\n", u, 1.0f - v);
             }
         }
