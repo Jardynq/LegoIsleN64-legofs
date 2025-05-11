@@ -6,7 +6,6 @@
 
 #include "dump_assets.h"
 #include "utils.h"
-#include "worlds.h"
 
 namespace fs = std::filesystem;
 
@@ -181,14 +180,9 @@ bool dump_lod(const Lod& lod, const char* filepath) {
         }
 
         for (unsigned int i = 0; i < mesh->faceCount * 3; i += 3) {
-            unsigned int a = indices[i] + vertexOffset;
-            unsigned int b = indices[i + 1] + vertexOffset;
-            unsigned int c = indices[i + 2] + vertexOffset;
-
-            // Calculate normals from face indices
-            Vertex& va = vertices[a];
-            Vertex& vb = vertices[b];
-            Vertex& vc = vertices[c];
+            Vertex& va = vertices[indices[i]];
+            Vertex& vb = vertices[indices[i + 1]];
+            Vertex& vc = vertices[indices[i + 2]];
             float ab[3] = {
                 vb.p[0] - va.p[0],
                 vb.p[1] - va.p[1], 
