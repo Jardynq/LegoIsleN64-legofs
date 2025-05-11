@@ -37,7 +37,10 @@ void handle_worlds(const char *path, const std::string &dest, bool is_sync) {
 	
 	std::vector<std::thread> threads;
 	std::unordered_map<std::string, std::mutex*> mutexes;
+	FILE* index_file = fopen((dest + "index_w").c_str(), "wb");
 	for (auto& world : db.worlds) {
+		write_world(world, index_file);
+
 		for (auto& model : world.m_models) {
 			for (auto& texture : model->m_textures) {
 				mutexes.insert({texture->m_name, new std::mutex()});

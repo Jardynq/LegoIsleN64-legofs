@@ -716,12 +716,82 @@ WorldDB WorldDB::Read(const char* path) {
 	return result;
 }
 
+unsigned int calc_world_size(const World &world) {
+	unsigned int size = 0;
+	size += sizeof(unsigned short);
+	for (auto part : world.m_parts) {
+		size += sizeof(unsigned short);
+		size += strlen(part->ref->m_roiname);
+	}
+
+	size += sizeof(unsigned short);
+	for (auto model : world.m_models) {
+		auto& ref = model->ref;
+		size += sizeof(unsigned short);
+		size += strlen(ref->m_modelName);
+		size += sizeof(unsigned short);
+		size += strlen(ref->m_presenterName);
+		size += sizeof(ref->m_location[0]) * 3;
+		size += sizeof(ref->m_direction[0]) * 3;
+		size += sizeof(ref->m_up[0]) * 3;
+		size += sizeof(ref->m_isVisible);
+		
+		size += sizeof(unsigned short);
+		for (auto comp : model->m_roi.m_components) {
+			size += sizeof(unsigned short);
+			size += strlen(comp->m_roiname) + 1;
+		}
+	}
+	return size;
+}
+
+void write_world(const World &world, FILE *file) {
+	unsigned int world_size = calc_world_size(world);
+	fwrite2(&world_size, sizeof(world_size), 1, file);
+
+	unsigned short size = world.m_parts.size();
+	fwrite2(&size, sizeof(size), 1, file);
+	for (auto part : world.m_parts) {
+		size = strlen(part->ref->m_roiname);
+		fwrite2(&size, sizeof(size), 1, file);
+		fwrite2(&part->ref->m_roiname, size, 1, file);
+	}
+
+	size = world.m_models.size();
+	fwrite2(&size, sizeof(size), 1, file);
+	for (auto model : world.m_models) {
+		auto& ref = model->ref;
+		size = strlen(ref->m_modelName);
+		fwrite2(&size, sizeof(size), 1, file);
+		fwrite2(&ref->m_modelName, size, 1, file);
+		
+		size = strlen(ref->m_presenterName);
+		fwrite2(&size, sizeof(size), 1, file);
+		fwrite2(&ref->m_presenterName, size, 1, file);
+
+		fwrite2(&ref->m_location[0], sizeof(ref->m_location[0]), 1, file);
+		fwrite2(&ref->m_location[1], sizeof(ref->m_location[1]), 1, file);
+		fwrite2(&ref->m_location[2], sizeof(ref->m_location[2]), 1, file);
+		fwrite2(&ref->m_direction[0], sizeof(ref->m_direction[0]), 1, file);
+		fwrite2(&ref->m_direction[1], sizeof(ref->m_direction[1]), 1, file);
+		fwrite2(&ref->m_direction[2], sizeof(ref->m_direction[2]), 1, file);
+		fwrite2(&ref->m_up[0], sizeof(ref->m_up[0]), 1, file);
+		fwrite2(&ref->m_up[1], sizeof(ref->m_up[1]), 1, file);
+		fwrite2(&ref->m_up[2], sizeof(ref->m_up[2]), 1, file);
+
+		fwrite2(&ref->m_isVisible, sizeof(ref->m_isVisible), 1, file);
+
+		size = model->m_roi.m_components.size();
+		fwrite2(&size, sizeof(size), 1, file);
+		for (auto comp : model->m_roi.m_components) {
+			size = strlen(comp->m_roiname);
+			fwrite2(&size, sizeof(size), 1, file);
+			fwrite2(&comp->m_roiname, size, 1, file);
+		}
+	}
+}
 
 void handle_world(World& world, const std::string dest, std::unordered_map<std::string, std::mutex*>& mutexes) {
-	// TODO write an index for each world.
-	// I.e. write all the model references
-	std::string index_path = dest + world.m_worldName + ".index";
-
 	for (auto model : world.m_models) {
 		for (auto texture : model->m_textures) {
 			std::string texture_path = dest + texture->m_name;
