@@ -6,6 +6,7 @@
 
 #include "dump_assets.h"
 #include "utils.h"
+#include "worlds.h"
 
 namespace fs = std::filesystem;
 
@@ -185,9 +186,9 @@ bool dump_lod(const Lod& lod, const char* filepath) {
             unsigned int c = indices[i + 2] + vertexOffset;
 
             // Calculate normals from face indices
-            Vertex& va = vertices[indices[i]];
-            Vertex& vb = vertices[indices[i + 1]];
-            Vertex& vc = vertices[indices[i + 2]];
+            Vertex& va = vertices[a];
+            Vertex& vb = vertices[b];
+            Vertex& vc = vertices[c];
             float ab[3] = {
                 vb.p[0] - va.p[0],
                 vb.p[1] - va.p[1], 
@@ -204,15 +205,11 @@ bool dump_lod(const Lod& lod, const char* filepath) {
                 ab[0] * ac[1] - ab[1] * ac[0]
             };
 
-            va.n[0] += cross[0];
-            va.n[1] += cross[1];
-            va.n[2] += cross[2];
-            vb.n[0] += cross[0];
-            vb.n[1] += cross[1];
-            vb.n[2] += cross[2];
-            vc.n[0] += cross[0];
-            vc.n[1] += cross[1];
-            vc.n[2] += cross[2];
+            for (int j = 0; j < 3; ++j) {
+                va.n[j] += cross[j];
+                vb.n[j] += cross[j];
+                vc.n[j] += cross[j];
+            }
         }
 
         for (unsigned int i = 0; i < mesh->vertexCount; ++i) {
@@ -239,7 +236,6 @@ bool dump_lod(const Lod& lod, const char* filepath) {
             unsigned int b = indices[i + 1] + vertexOffset;
             unsigned int c = indices[i + 2] + vertexOffset;
 
-            // TODO vertex normals are not correct
             if (mesh->pTextureCoordinates) {
                 fprintf(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", a, a, a, b, b, b, c, c, c);
             } else {
