@@ -198,6 +198,12 @@ bool dump_lod(const Lod& lod, const char* filepath) {
                 ab[2] * ac[0] - ab[0] * ac[2],
                 ab[0] * ac[1] - ab[1] * ac[0]
             };
+            float length = sqrtf(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
+            if (length > 0.0f) {
+                cross[0] /= length;
+                cross[1] /= length;
+                cross[2] /= length;
+            }
 
             for (int j = 0; j < 3; ++j) {
                 va.n[j] += cross[j];
