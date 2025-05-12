@@ -104,7 +104,7 @@ void CreateMesh(
 
             if (pTextureIndices != NULL && pTextureCoordinates != NULL) {
 				j = ((unsigned int*) pTextureIndices)[i];
-                vertices[index].t[0] = 1.0f - pTextureCoordinates[j][0];
+                vertices[index].t[0] = pTextureCoordinates[j][0];
                 vertices[index].t[1] = pTextureCoordinates[j][1];
             }
 
