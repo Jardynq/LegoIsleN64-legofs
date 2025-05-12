@@ -775,8 +775,6 @@ void write_world(const World &world, const std::string &dest) {
 }
 
 void handle_world(World& world, const std::string& dest, std::unordered_map<std::string, std::mutex*>* mutexes) {
-	write_world(world, dest);
-
 	for (auto model : world.m_models) {
 		for (auto texture : model->m_textures) {
 			std::string texture_path = dest + texture->m_name;
@@ -807,5 +805,6 @@ void handle_world(World& world, const std::string& dest, std::unordered_map<std:
 		}
 	}
 
+	write_world(world, dest);
 	//world.free();
 }
