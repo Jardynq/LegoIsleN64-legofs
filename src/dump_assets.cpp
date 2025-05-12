@@ -2,12 +2,9 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <filesystem>
+#include <string>
 
 #include "dump_assets.h"
-#include "utils.h"
-
-namespace fs = std::filesystem;
 
 bool dump_texture(const Texture& texture, const char* path) {
     FILE* fp = fopen(path, "wb");
@@ -140,17 +137,22 @@ bool dump_mtl(const Lod& lod, const char* filepath) {
     fclose(f);
     return true;
 }
-bool dump_lod(const Lod& lod, const char* filepath) {
-    if (lod.m_melems.empty()) return false;
 
-    FILE* f = fopen(filepath, "w");
-    if (!f) return false;
+void dump_lod(const Lod& lod, float center[3], const std::string& dest, const char* roiname, int index, std::mutex* mutex) {
+    if (lod.m_melems.empty()) return;
+    std::string basename = std::string(roiname) + "_" + std::to_string(index++);
+    
+    if (mutex != nullptr) {
+        mutex->lock();
+    }
+    std::string objfile = dest + basename + ".obj";
+    FILE* f = fopen(objfile.c_str(), "w");
+    if (!f) return;
 
-    const char* matfile = strdup(filepath);
-    replace_end(matfile, ".mtl", ".obj");
-    dump_mtl(lod, matfile);
+    std::string matfile = dest + basename + ".mtl";
+    dump_mtl(lod, matfile.c_str());
 
-    auto matfile_rel = fs::path(filepath).stem().string() + ".mtl";
+    auto matfile_rel = basename + ".mtl";
     fprintf(f, "mtllib %s\n", matfile_rel.c_str());
     
     unsigned int vertexOffset = 1;
@@ -176,6 +178,9 @@ bool dump_lod(const Lod& lod, const char* filepath) {
 
         for (unsigned int i = 0; i < mesh->vertexCount; ++i) {
             auto p = vertices[i].p;
+            p[0] -= center[0];
+            p[1] -= center[1];
+            p[2] -= center[2];
             fprintf(f, "v %f %f %f\n", p[0], p[1], p[2]);
         }
 
@@ -248,7 +253,62 @@ bool dump_lod(const Lod& lod, const char* filepath) {
         delete[] vertices;
         delete[] indices;
     }
-
     fclose(f);
-    return true;
+    if (mutex != nullptr) {
+        mutex->unlock();
+    }
+}
+
+void dump_components(const Model* model, const std::string& dest, std::unordered_map<std::string, std::mutex*>* mutexes) {
+    int vert_count = 0;
+    for (auto comp : model->m_roi.m_components) {
+        for (auto lod : comp->m_lods) {
+            vert_count += lod->m_numVertices;
+        }
+    }
+    if (vert_count == 0) return;
+
+    float center[3] = {0.0f, 0.0f, 0.0f};
+    for (auto comp : model->m_roi.m_components) {
+        for (auto lod : comp->m_lods) {
+            for (unsigned int m = 0; m < lod->m_melems.size(); ++m) {
+                const Mesh* mesh = lod->m_melems[m];
+
+                Vertex* vertices = nullptr;
+                unsigned int* indices = nullptr;
+                CreateMesh(
+                    mesh->faceCount,
+                    mesh->vertexCount,
+                    mesh->pPositions,
+                    mesh->pNormals,
+                    mesh->pTextureCoordinates,
+                    mesh->pFaceIndices,
+                    mesh->pTextureIndices,
+                    &indices,
+                    &vertices
+                );
+
+                float mesh_center[3] = {0.0f, 0.0f, 0.0f};
+                for (unsigned int i = 0; i < mesh->vertexCount; ++i) {
+                    mesh_center[0] += vertices[i].p[0];
+                    mesh_center[1] += vertices[i].p[1];
+                    mesh_center[2] += vertices[i].p[2];
+                }
+                center[0] += mesh_center[0] / vert_count;
+                center[1] += mesh_center[1] / vert_count;
+                center[2] += mesh_center[2] / vert_count;
+
+                delete[] vertices;
+                delete[] indices;
+            }
+        }
+    }   
+
+    for (auto comp : model->m_roi.m_components) {
+        int i_lod = 0;
+        std::string basename = std::string(comp->m_roiname) + "_";
+        for (auto lod : comp->m_lods) {
+            dump_lod(*lod, center, dest, comp->m_roiname, i_lod++, (*mutexes)[comp->m_roiname]);
+        }
+    }
 }

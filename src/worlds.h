@@ -205,14 +205,12 @@ struct Model {
 	bool Read(char** mem);
 	void free() {
 		FREE_PTR(ref);
-		FREE_ARR(m_roiname);
 		FREE_OBJ(m_anim);
 		FREE_OBJ(m_roi);
 		FREE_PTR_VEC(m_textures);
 	}
 
 	ModelRef* ref;
-	const char* m_roiname = nullptr;
 	std::vector<Texture*> m_textures;
 	Anim m_anim;
 	Roi m_roi;
@@ -259,4 +257,4 @@ struct WorldDB {
 
 static std::unordered_map<const char*, std::vector<Lod*>> g_lod_map;
 
-void handle_world(World& world, const std::string dest, std::unordered_map<std::string, std::mutex*>& mutexes);
+void handle_world(World& world, const std::string& dest, std::unordered_map<std::string, std::mutex*>* mutexes);

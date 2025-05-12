@@ -771,47 +771,36 @@ void write_world(const World &world, const std::string &dest) {
 	fclose(file);
 }
 
-void handle_world(World& world, const std::string dest, std::unordered_map<std::string, std::mutex*>& mutexes) {
+void handle_world(World& world, const std::string& dest, std::unordered_map<std::string, std::mutex*>* mutexes) {
 	write_world(world, dest);
 
 	for (auto model : world.m_models) {
 		for (auto texture : model->m_textures) {
 			std::string texture_path = dest + texture->m_name;
-			mutexes[texture->m_name]->lock();
+			(*mutexes)[texture->m_name]->lock();
 			replace_end(texture_path.c_str(), ".bmp", ".png");
 			dump_texture(*texture, texture_path.c_str());
-			mutexes[texture->m_name]->unlock();
+			(*mutexes)[texture->m_name]->unlock();
 		}
-
-		for (auto comp : model->m_roi.m_components) {
-			int i_lod = 0;
-			mutexes[comp->m_roiname]->lock();
-			for (auto lod: comp->m_lods) {
-				std::string lod_path = dest + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
-				dump_lod(*lod, lod_path.c_str());
-				i_lod += 1;
-			}
-			mutexes[comp->m_roiname]->unlock();
-		}
+		
+		dump_components(model, dest, mutexes);
 	}
 
 	for (auto part : world.m_parts) {
 		for (auto texture : part->m_textures) {
-			mutexes[texture->m_name]->lock();
+			(*mutexes)[texture->m_name]->lock();
 			std::string texture_path = dest + texture->m_name;
 			replace_end(texture_path.c_str(), ".bmp", ".png");
 			dump_texture(*texture, texture_path.c_str());
-			mutexes[texture->m_name]->unlock();
+			(*mutexes)[texture->m_name]->unlock();
 		}
 		for (auto data : part->m_data) {
 			int i_lod = 0;
-			mutexes[data->m_roiname]->lock();
 			for (auto lod : data->m_lods) {
-				std::string lod_path = dest + data->m_roiname + "_" + std::to_string(i_lod) + ".obj";
-				dump_lod(*lod, lod_path.c_str());
+				float zero[3] = {0.0f, 0.0f, 0.0f};
+				dump_lod(*lod, zero, dest, data->m_roiname, i_lod, (*mutexes)[data->m_roiname]);
 				i_lod += 1;
 			}
-			mutexes[data->m_roiname]->unlock();
 		}
 	}
 

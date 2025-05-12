@@ -5,4 +5,5 @@
 #include "worlds.h"
 
 bool dump_texture(const Texture& texture, const char* path);
-bool dump_lod(const Lod& lod, const char* filepath);
+void dump_components(const Model* model, const std::string& dest, std::unordered_map<std::string, std::mutex*>* mutexes);
+void dump_lod(const Lod& lod, float center[3], const std::string& dest, const char* roiname, int index, std::mutex* mutex);

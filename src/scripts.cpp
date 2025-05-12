@@ -41,14 +41,7 @@ void dump_node(const Node &node, const char* extension, Object* object, const st
             replace_end(texture_path.c_str(), ".bmp", ".png");
             dump_texture(*texture, texture_path.c_str());
         }
-        for (auto comp : model->m_roi.m_components) {
-            int i_lod = 0;
-            for (auto lod: comp->m_lods) {
-                std::string lod_path = dest + std::string(comp->m_roiname) + "_" + std::to_string(i_lod) + ".obj";
-                dump_lod(*lod, lod_path.c_str());
-                i_lod += 1;
-            }
-        }
+        dump_components(model, dest, nullptr);
         model->free();
         delete model;
         buf.clear();

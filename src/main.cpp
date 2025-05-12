@@ -58,9 +58,9 @@ void handle_worlds(const char *path, const std::string &dest, bool is_sync) {
 
 	for (auto& world : db.worlds) {
 		if (is_sync) {
-			handle_world(world, dest, mutexes);
+			handle_world(world, dest, &mutexes);
 		} else {
-			threads.push_back(std::thread(handle_world, std::ref(world), dest, std::ref(mutexes)));
+			threads.push_back(std::thread(handle_world, std::ref(world), std::ref(dest), &mutexes));
 		}
 	}
 	for (auto& thread : threads) {
