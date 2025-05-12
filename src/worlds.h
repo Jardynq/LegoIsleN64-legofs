@@ -195,6 +195,7 @@ struct ModelRef {
 	unsigned int m_dataLength = 0;
 	unsigned int m_dataOffset = 0;
 	const char* m_presenterName = nullptr;
+	float m_center[3] = {0.0f, 0.0f, 0.0f};
 	float m_location[3] = {0.0f, 0.0f, 0.0f};
 	float m_direction[3] = {0.0f, 0.0f, 0.0f};
 	float m_up[3] = {0.0f, 0.0f, 0.0f};

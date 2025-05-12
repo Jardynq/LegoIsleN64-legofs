@@ -259,7 +259,7 @@ void dump_lod(const Lod& lod, float center[3], const std::string& dest, const ch
     }
 }
 
-void dump_components(const Model* model, const std::string& dest, std::unordered_map<std::string, std::mutex*>* mutexes) {
+void dump_components(Model* model, const std::string& dest, std::unordered_map<std::string, std::mutex*>* mutexes) {
     int vert_count = 0;
     for (auto comp : model->m_roi.m_components) {
         for (auto lod : comp->m_lods) {
@@ -302,7 +302,10 @@ void dump_components(const Model* model, const std::string& dest, std::unordered
                 delete[] indices;
             }
         }
-    }   
+    }
+    model->ref->m_center[0] = center[0];
+    model->ref->m_center[1] = center[1];
+    model->ref->m_center[2] = center[2];
 
     for (auto comp : model->m_roi.m_components) {
         int i_lod = 0;

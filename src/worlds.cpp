@@ -746,6 +746,9 @@ void write_world(const World &world, const std::string &dest) {
 		fwrite2(&size, sizeof(size), 1, file);
 		fwrite2(ref->m_presenterName, sizeof(char), size, file);
 
+		fwrite2(&ref->m_center[0], sizeof(ref->m_center[0]), 1, file);
+		fwrite2(&ref->m_center[1], sizeof(ref->m_center[1]), 1, file);
+		fwrite2(&ref->m_center[2], sizeof(ref->m_center[2]), 1, file);
 		fwrite2(&ref->m_location[0], sizeof(ref->m_location[0]), 1, file);
 		fwrite2(&ref->m_location[1], sizeof(ref->m_location[1]), 1, file);
 		fwrite2(&ref->m_location[2], sizeof(ref->m_location[2]), 1, file);
