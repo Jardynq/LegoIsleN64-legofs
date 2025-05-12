@@ -185,9 +185,9 @@ void dump_lod(const Lod& lod, float center[3], const std::string& dest, const ch
         }
 
         for (unsigned int i = 0; i < mesh->faceCount * 3; i += 3) {
-            Vertex& va = vertices[indices[i]];
+            Vertex& va = vertices[indices[i + 2]];
             Vertex& vb = vertices[indices[i + 1]];
-            Vertex& vc = vertices[indices[i + 2]];
+            Vertex& vc = vertices[indices[i]];
             float ab[3] = {
                 vb.p[0] - va.p[0],
                 vb.p[1] - va.p[1], 
@@ -237,14 +237,14 @@ void dump_lod(const Lod& lod, float center[3], const std::string& dest, const ch
         }
 
         for (unsigned int i = 0; i < mesh->faceCount * 3; i += 3) {
-            unsigned int a = indices[i] + vertexOffset;
+            unsigned int a = indices[i + 2] + vertexOffset;
             unsigned int b = indices[i + 1] + vertexOffset;
-            unsigned int c = indices[i + 2] + vertexOffset;
+            unsigned int c = indices[i] + vertexOffset;
 
             if (mesh->pTextureCoordinates) {
                 fprintf(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", a, a, a, b, b, b, c, c, c);
             } else {
-                fprintf(f, "f %u//%u %u//%u %u//%u\n", a, a, b, b, c, c);
+                fprintf(f, "f %u//%u %u//%u %u//%u\n", c, a, b, b, c, c);
             }
         }
 
