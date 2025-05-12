@@ -730,8 +730,8 @@ void write_world(const World &world, const std::string &dest) {
 		size = strlen(part->ref->m_roiname);
 		fwrite2(&size, sizeof(size), 1, file);
 		fwrite2(part->ref->m_roiname, sizeof(char), size, file);
-		size = part->m_data[0]->m_lods.size();
-		fwrite2(&size, sizeof(size), 1, file);
+		unsigned char lod_count = part->m_data[0]->m_lods.size();
+		fwrite2(&lod_count, sizeof(lod_count), 1, file);
 	}
 
 	size = world.m_models.size();
@@ -764,8 +764,8 @@ void write_world(const World &world, const std::string &dest) {
 			size = strlen(comp->m_roiname);
 			fwrite2(&size, sizeof(size), 1, file);
 			fwrite2(comp->m_roiname, sizeof(char), size, file);
-			size = comp->m_lods.size();
-			fwrite2(&size, sizeof(size), 1, file);
+			unsigned char lod_count = comp->m_lods.size();
+			fwrite2(&lod_count, sizeof(lod_count), 1, file);
 		}
 	}
 	fclose(file);
