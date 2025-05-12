@@ -23,31 +23,34 @@ void replace_end(const char* name, const char* new_ext, const char* old_ext) {
 
 
 void fwrite2inner(void* ptr, size_t size, size_t count, FILE *file) {
-	uint8_t *data = (uint8_t *)ptr;
-	if (size == 2) {
+	uint64_t data = 0;
+    uint8_t* p = (uint8_t*)&data; 
+    if (size == 2) {
 		uint16_t d = *(uint16_t *)ptr;
-		data[0] = BYTE(d >> 8);
-		data[1] = BYTE(d >> 0);
-	}
-	else if (size == 4) {
+		p[0] = BYTE(d >> 8);
+		p[1] = BYTE(d >> 0);
+        fwrite((uint16_t*)p, size, count, file);
+	} else if (size == 4) {
 		uint32_t d = *(uint32_t *)ptr;
-		data[0] = BYTE(d >> 24);
-		data[1] = BYTE(d >> 16);
-		data[2] = BYTE(d >> 8);
-		data[3] = BYTE(d >> 0);
-	}
-	else if (size == 8) {
+		p[0] = BYTE(d >> 24);
+		p[1] = BYTE(d >> 16);
+		p[2] = BYTE(d >> 8);
+		p[3] = BYTE(d >> 0);
+        fwrite((uint32_t*)p, size, count, file);
+	} else if (size == 8) {
 		uint64_t d = *(uint64_t *)ptr;
-		data[0] = BYTE(d >> 56);
-		data[1] = BYTE(d >> 48);
-		data[2] = BYTE(d >> 40);
-		data[3] = BYTE(d >> 32);
-		data[4] = BYTE(d >> 24);
-		data[5] = BYTE(d >> 16);
-		data[6] = BYTE(d >> 8);
-		data[7] = BYTE(d >> 0);
-	}
-	fwrite(data, size, count, file);
+		p[0] = BYTE(d >> 56);
+		p[1] = BYTE(d >> 48);
+		p[2] = BYTE(d >> 40);
+		p[3] = BYTE(d >> 32);
+		p[4] = BYTE(d >> 24);
+		p[5] = BYTE(d >> 16);
+		p[6] = BYTE(d >> 8);
+		p[7] = BYTE(d >> 0);
+        fwrite((uint64_t*)p, size, count, file);
+	} else {
+        fwrite(ptr, size, count, file);
+    }
 }
 
 void strlwr(const char* s) {
