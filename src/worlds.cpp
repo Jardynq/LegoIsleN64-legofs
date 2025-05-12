@@ -729,7 +729,9 @@ void write_world(const World &world, const std::string &dest) {
 	for (auto part : world.m_parts) {
 		size = strlen(part->ref->m_roiname);
 		fwrite2(&size, sizeof(size), 1, file);
-		fwrite2(&part->ref->m_roiname, size, 1, file);
+		fwrite2(part->ref->m_roiname, sizeof(char), size, file);
+		size = part->m_data[0]->m_lods.size();
+		fwrite2(&size, sizeof(size), 1, file);
 	}
 
 	size = world.m_models.size();
@@ -738,11 +740,11 @@ void write_world(const World &world, const std::string &dest) {
 		auto& ref = model->ref;
 		size = strlen(ref->m_modelName);
 		fwrite2(&size, sizeof(size), 1, file);
-		fwrite2(&ref->m_modelName, size, 1, file);
+		fwrite2(ref->m_modelName, sizeof(char), size, file);
 		
 		size = strlen(ref->m_presenterName);
 		fwrite2(&size, sizeof(size), 1, file);
-		fwrite2(&ref->m_presenterName, size, 1, file);
+		fwrite2(ref->m_presenterName, sizeof(char), size, file);
 
 		fwrite2(&ref->m_location[0], sizeof(ref->m_location[0]), 1, file);
 		fwrite2(&ref->m_location[1], sizeof(ref->m_location[1]), 1, file);
@@ -761,7 +763,9 @@ void write_world(const World &world, const std::string &dest) {
 		for (auto comp : model->m_roi.m_components) {
 			size = strlen(comp->m_roiname);
 			fwrite2(&size, sizeof(size), 1, file);
-			fwrite2(&comp->m_roiname, size, 1, file);
+			fwrite2(comp->m_roiname, sizeof(char), size, file);
+			size = comp->m_lods.size();
+			fwrite2(&size, sizeof(size), 1, file);
 		}
 	}
 	fclose(file);

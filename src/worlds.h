@@ -259,5 +259,4 @@ struct WorldDB {
 
 static std::unordered_map<const char*, std::vector<Lod*>> g_lod_map;
 
-void write_world(const World &world, const std::string &dest);
 void handle_world(World& world, const std::string dest, std::unordered_map<std::string, std::mutex*>& mutexes);

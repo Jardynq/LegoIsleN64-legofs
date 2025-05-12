@@ -200,15 +200,15 @@ void write_node(const Node &node, FILE *file) {
 
 	unsigned short size = strlen(node.name);
 	fwrite2(&size, sizeof(size), 1, file);
-	fwrite2(node.name, sizeof(char), strlen(node.name), file);
+	fwrite2(node.name, sizeof(char), size, file);
 
 	size = strlen(node.path);
 	fwrite2(&size, sizeof(size), 1, file);
-	fwrite2(node.path, sizeof(char), strlen(node.path), file);
+	fwrite2(node.path, sizeof(char), size, file);
 
 	size = strlen(node.presenter);
 	fwrite2(&size, sizeof(size), 1, file);
-	fwrite2(node.presenter, sizeof(char), strlen(node.presenter), file);
+	fwrite2(node.presenter, sizeof(char), size, file);
 
 	fwrite2(&node.start_time, sizeof(node.start_time), 1, file);
 	fwrite2(&node.duration, sizeof(node.duration), 1, file);
