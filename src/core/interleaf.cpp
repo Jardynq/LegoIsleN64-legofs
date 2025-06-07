@@ -142,9 +142,9 @@ Interleaf::Error Interleaf::ReadChunk(Core *parent, FileBase *f, Info *info)
           uint32_t rand_upper = f->ReadU32();
           uint64_t rand_val = uint64_t(rand_upper) << 32 | list_count;
           f->seek(1, File::SeekCurrent);
-          desc << ((const char *) &rand_val);
+          desc << std::string((const char *) &rand_val, 4);
         } else if (list_count == LIST::Act_) {
-          desc << ((const char *) &list_count);
+          desc << std::string((const char *) &list_count, 4);
         }
         desc << std::endl;
 
@@ -153,7 +153,7 @@ Interleaf::Error Interleaf::ReadChunk(Core *parent, FileBase *f, Info *info)
         for (uint32_t i=0; i<list_count; i++) {
           // Read every short
           uint16_t val = f->ReadU16();
-          desc << "  " << ((const char *) &val) << std::endl;
+          desc << "  " << std::string((const char *) &val, 2) << std::endl;
         }
       }
       desc << "Count: " << list_count << std::endl;

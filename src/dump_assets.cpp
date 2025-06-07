@@ -303,15 +303,16 @@ void dump_components(Model* model, const std::string& dest, std::unordered_map<s
             }
         }
     }
-    model->ref->m_center[0] = center[0];
-    model->ref->m_center[1] = center[1];
-    model->ref->m_center[2] = center[2];
 
     for (auto comp : model->m_roi.m_components) {
         int i_lod = 0;
         std::string basename = std::string(comp->m_roiname) + "_";
         for (auto lod : comp->m_lods) {
-            dump_lod(*lod, center, dest, comp->m_roiname, i_lod++, (*mutexes)[comp->m_roiname]);
+            if (mutexes != nullptr) {
+                dump_lod(*lod, center, dest, comp->m_roiname, i_lod++, (*mutexes)[comp->m_roiname]);
+            } else {
+                dump_lod(*lod, center, dest, comp->m_roiname, i_lod++, nullptr);
+            }
         }
     }
 }
