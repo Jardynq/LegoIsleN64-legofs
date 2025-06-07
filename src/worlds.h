@@ -197,8 +197,8 @@ struct ModelRef {
 	const char* m_presenterName = nullptr;
 	float m_center[3] = {0.0f, 0.0f, 0.0f};
 	float m_location[3] = {0.0f, 0.0f, 0.0f};
-	float m_direction[3] = {0.0f, 0.0f, 0.0f};
-	float m_up[3] = {0.0f, 0.0f, 0.0f};
+	float m_direction[3] = {0.0f, 0.0f, 1.0f};
+	float m_up[3] = {0.0f, 1.0f, 0.0f};
 	bool m_isVisible = 0;
 };
 

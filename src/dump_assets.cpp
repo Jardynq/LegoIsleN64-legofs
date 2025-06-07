@@ -303,6 +303,12 @@ void dump_components(Model* model, const std::string& dest, std::unordered_map<s
             }
         }
     }
+    if (model->ref == nullptr) {
+        model->ref = new ModelRef();
+    }
+    model->ref->m_center[0] = center[0];
+    model->ref->m_center[1] = center[1];
+    model->ref->m_center[2] = center[2];
 
     for (auto comp : model->m_roi.m_components) {
         int i_lod = 0;
